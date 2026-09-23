@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes a run still in progress.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Unit and UI tests
+    # Pinned rather than macos-latest, so a runner image change can't
+    # silently swap the Xcode the app builds with.
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      XCODE_APP: /Applications/Xcode_26.6.app
+      DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select --switch "$XCODE_APP"
+          xcodebuild -version
+
+      # Tally.xcodeproj is generated and gitignored; project.yml is the source.
+      - name: Generate the Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -scheme Tally \
+            -destination "$DESTINATION" \
+            -resultBundlePath TestResults.xcresult \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Report coverage
+        if: ${{ !cancelled() && hashFiles('TestResults.xcresult/**') != '' }}
+        run: |
+          {
+            echo '### Code coverage'
+            echo '```'
+            xcrun xccov view --report --only-targets TestResults.xcresult
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the result bundle
+        if: ${{ failure() && hashFiles('TestResults.xcresult/**') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: TestResults
+          path: TestResults.xcresult
+          retention-days: 7
