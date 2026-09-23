@@ -8,16 +8,18 @@ final class RecordingURLProtocol: URLProtocol {
     nonisolated(unsafe) private static var lock = NSLock()
     nonisolated(unsafe) private static var _requests: [URLRequest] = []
     nonisolated(unsafe) private static var _stub: Data = Data()
+    nonisolated(unsafe) private static var _statusCode = 200
 
     static var requests: [URLRequest] {
         lock.lock(); defer { lock.unlock() }
         return _requests
     }
 
-    static func reset(stub: Data) {
+    static func reset(stub: Data, statusCode: Int = 200) {
         lock.lock(); defer { lock.unlock() }
         _requests = []
         _stub = stub
+        _statusCode = statusCode
     }
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -32,11 +34,12 @@ final class RecordingURLProtocol: URLProtocol {
     override func startLoading() {
         Self.lock.lock()
         let data = Self._stub
+        let statusCode = Self._statusCode
         Self.lock.unlock()
 
         let response = HTTPURLResponse(
             url: request.url!,
-            statusCode: 200,
+            statusCode: statusCode,
             httpVersion: "HTTP/1.1",
             headerFields: ["Content-Type": "application/xml"]
         )!
@@ -46,14 +49,18 @@ final class RecordingURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {}
+
+    static func makeSession() -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [RecordingURLProtocol.self]
+        return URLSession(configuration: configuration)
+    }
 }
 
 final class RatesServiceTests: XCTestCase {
-    private func makeService(stub: Data) -> RatesService {
-        RecordingURLProtocol.reset(stub: stub)
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.protocolClasses = [RecordingURLProtocol.self]
-        return RatesService(session: URLSession(configuration: configuration))
+    private func makeService(stub: Data, statusCode: Int = 200) -> RatesService {
+        RecordingURLProtocol.reset(stub: stub, statusCode: statusCode)
+        return RatesService(session: RecordingURLProtocol.makeSession())
     }
 
     private func dailyFixture() throws -> Data {
@@ -109,6 +116,17 @@ final class RatesServiceTests: XCTestCase {
             XCTFail("expected a parse failure")
         } catch {
             XCTAssertTrue(error is ECBRatesError)
+        }
+    }
+
+    func testAnErrorStatusThrowsEvenWithABody() async throws {
+        let service = makeService(stub: try dailyFixture(), statusCode: 503)
+
+        do {
+            _ = try await service.fetch(.daily)
+            XCTFail("expected a bad-status failure")
+        } catch ECBRatesError.badStatus(let code) {
+            XCTAssertEqual(code, 503)
         }
     }
 }

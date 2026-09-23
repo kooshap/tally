@@ -3,6 +3,14 @@ import SwiftData
 
 /// Writes that carry a rule the model layer alone cannot express.
 enum BalanceStore {
+    /// §6: the dates a balance may be entered for. The past can be backfilled
+    /// back to the first rate Tally keeps — an earlier balance could never be
+    /// converted — and the future cannot be known.
+    static func allowedDates(now: Date = .now, calendar: Calendar = .current) -> ClosedRange<Date> {
+        let earliest = calendar.startOfDay(for: RateStore.earliestDay.date(in: calendar))
+        return earliest...max(earliest, now)
+    }
+
     /// Records `amount` for `account` on `day`, replacing that day's entry if
     /// one already exists. This is the "at most one entry per account per day"
     /// rule: a second edit on the same day overwrites rather than adding a
@@ -29,6 +37,9 @@ enum BalanceStore {
     }
 
     static func delete(_ entry: BalanceEntry, in context: ModelContext) {
+        // Detach first: a deleted object stays in the relationship array until
+        // the next save, and would still count as the account's latest balance.
+        entry.account?.entries.removeAll { $0 === entry }
         context.delete(entry)
     }
 
@@ -51,7 +62,7 @@ enum BalanceStore {
         guard let archivedOn = account.archivedOn else { return }
         if let entry = account.entries.first(where: { $0.dayNumber == archivedOn.rawValue }),
            entry.amount == 0 {
-            context.delete(entry)
+            delete(entry, in: context)
         }
         account.archivedOn = nil
     }

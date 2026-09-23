@@ -19,11 +19,14 @@ struct TallyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppRootView()
-                .environment(settings)
-                .environment(rates)
-                .environment(lock)
-                .task { UITestSupport.seed(container) }
+            if UITestSupport.isHostingUnitTests {
+                Color.clear
+            } else {
+                AppRootView()
+                    .environment(settings)
+                    .environment(rates)
+                    .environment(lock)
+            }
         }
         .modelContainer(container)
     }

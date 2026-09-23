@@ -25,7 +25,7 @@ struct AppRootView: View {
             }
         }
         .task {
-            rates.loadCached(from: modelContext)
+            await rates.loadCached(from: modelContext)
             await rates.refreshIfNeeded(context: modelContext, settings: settings)
         }
         .onChange(of: scenePhase) { _, phase in

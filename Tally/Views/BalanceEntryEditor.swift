@@ -41,11 +41,10 @@ struct BalanceEntryEditor: View {
                         .keyboardType(.numbersAndPunctuation)
                         .accessibilityIdentifier("entry.amountField")
 
-                    // §6: the past can be backfilled; the future cannot be known.
                     DatePicker(
                         "Date",
                         selection: $date,
-                        in: ...Date.now,
+                        in: BalanceStore.allowedDates(),
                         displayedComponents: .date
                     )
                     .disabled(entry != nil)
@@ -77,7 +76,7 @@ struct BalanceEntryEditor: View {
 
     private func loadExisting() {
         guard let entry else { return }
-        amountText = "\(entry.amount)"
+        amountText = MoneyFormatting.editableString(entry.amount)
         date = entry.day.date()
     }
 

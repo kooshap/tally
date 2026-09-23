@@ -2,13 +2,16 @@ import XCTest
 
 /// §8: the one UI test — the monthly "update all" run, which is the flow the
 /// whole app exists to make quick.
+@MainActor
 final class UpdateAllFlowUITests: XCTestCase {
     private var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["-uiTestingReset"]
+        // A fixed locale, so the amounts asserted below read the same on any
+        // simulator.
+        app.launchArguments = ["-uiTestingReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
     }
 

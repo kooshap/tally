@@ -55,7 +55,7 @@ struct UpdateAllView: View {
         if let account = current {
             Form {
                 Section {
-                    DatePicker("As of", selection: $date, in: ...Date.now, displayedComponents: .date)
+                    DatePicker("As of", selection: $date, in: BalanceStore.allowedDates(), displayedComponents: .date)
                         .disabled(index > 0)
                 } footer: {
                     if index > 0 {
@@ -141,7 +141,7 @@ struct UpdateAllView: View {
     private func prefill() {
         for account in accounts where drafts[account.id] == nil {
             guard let latest = account.latestEntry else { continue }
-            drafts[account.id] = "\(latest.amount)"
+            drafts[account.id] = MoneyFormatting.editableString(latest.amount)
         }
     }
 

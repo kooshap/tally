@@ -3,9 +3,12 @@ import SwiftData
 
 /// A cached ECB reference rate. EUR is the pivot at exactly 1 and is never
 /// stored.
+///
+/// One row per day and currency is enforced by `RateStore.merge`, not by a
+/// `#Unique` constraint: Core Data validates uniqueness in quadratic time, and
+/// the ~200,000-row untrimmed history took over twenty minutes to save with it.
 @Model
 final class FXRate {
-    #Unique<FXRate>([\.dayNumber, \.currencyCode])
     #Index<FXRate>([\.dayNumber], [\.currencyCode], [\.dayNumber, \.currencyCode])
 
     /// `yyyymmdd` of the ECB business day.

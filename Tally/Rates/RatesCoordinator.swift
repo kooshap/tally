@@ -22,9 +22,9 @@ final class RatesCoordinator {
     }
 
     /// Reads whatever is already cached. Called before any network attempt, so
-    /// the app is usable offline from the first frame.
-    func loadCached(from context: ModelContext) {
-        table = (try? RateStore.loadTable(from: context)) ?? .empty
+    /// the app is usable offline straight away.
+    func loadCached(from context: ModelContext) async {
+        table = (try? await RateStore.loadTableInBackground(from: context.container)) ?? .empty
     }
 
     /// §5: the full history on first launch, so backfilled entries get the
@@ -47,9 +47,7 @@ final class RatesCoordinator {
 
         do {
             let quotes = try await service.fetch(endpoint)
-            try RateStore.merge(quotes, into: context)
-            try context.save()
-            table = try RateStore.loadTable(from: context)
+            table = try await RateStore.mergeInBackground(quotes, into: context.container)
             settings.lastRatesFetch = .now
             status = .idle
         } catch {

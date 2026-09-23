@@ -10,7 +10,7 @@ final class BalanceStoreTests: XCTestCase {
     private let day = CalendarDay(year: 2026, month: 2, day: 5)
     private let laterDay = CalendarDay(year: 2026, month: 3, day: 5)
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         container = try ModelContainer(
             for: Account.self, BalanceEntry.self, FXRate.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
@@ -18,7 +18,7 @@ final class BalanceStoreTests: XCTestCase {
         context = ModelContext(container)
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         container = nil
         context = nil
     }
@@ -82,6 +82,32 @@ final class BalanceStoreTests: XCTestCase {
         XCTAssertEqual(b.entries.count, 1)
     }
 
+    // MARK: - Allowed dates
+
+    func testBalancesCanBeBackfilledToTheFirstKeptRateAndNoFurther() {
+        let now = Date(timeIntervalSince1970: 1_790_000_000)
+
+        let range = BalanceStore.allowedDates(now: now)
+
+        XCTAssertEqual(CalendarDay(date: range.lowerBound), RateStore.earliestDay)
+        XCTAssertEqual(range.upperBound, now, "no future dates")
+        XCTAssertFalse(range.contains(CalendarDay(year: 2014, month: 12, day: 31).date()))
+    }
+
+    /// The whole of 1 January counts, whatever the time of day the picker
+    /// carries and whichever time zone the phone is in.
+    func testTheFirstAllowedDayStartsAtMidnightInAnyTimeZone() throws {
+        for identifier in ["Pacific/Kiritimati", "Europe/Zurich", "Pacific/Pago_Pago"] {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try XCTUnwrap(TimeZone(identifier: identifier))
+
+            let lowerBound = BalanceStore.allowedDates(calendar: calendar).lowerBound
+
+            XCTAssertEqual(CalendarDay(date: lowerBound, calendar: calendar), RateStore.earliestDay, identifier)
+            XCTAssertEqual(calendar.dateComponents([.hour, .minute], from: lowerBound), DateComponents(hour: 0, minute: 0), identifier)
+        }
+    }
+
     // MARK: - Archiving
 
     func testArchivingWritesAZeroOnTheArchiveDay() {
@@ -118,6 +144,31 @@ final class BalanceStoreTests: XCTestCase {
         XCTAssertEqual(account.currentAmount, 42)
     }
 
+    /// The zero must leave the account at once, not at the next save, or the
+    /// list keeps showing a balance of 0 after the account is restored.
+    func testUnarchivingRestoresTheBalanceBeforeAnySave() throws {
+        let account = makeAccount()
+        BalanceStore.record(1_000, on: day, for: account, in: context)
+        BalanceStore.archive(account, on: laterDay, in: context)
+        try context.save()
+
+        BalanceStore.unarchive(account, in: context)
+
+        XCTAssertEqual(account.entries.count, 1)
+        XCTAssertEqual(account.latestEntry?.day, day)
+        try context.save()
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<BalanceEntry>()), 1)
+    }
+
+    func testUnarchivingAnActiveAccountChangesNothing() {
+        let account = makeAccount()
+        BalanceStore.record(0, on: day, for: account, in: context)
+
+        BalanceStore.unarchive(account, in: context)
+
+        XCTAssertEqual(account.entries.count, 1, "a real zero balance is not the archive marker")
+    }
+
     func testArchivedAccountStillContributesItsPastToTheSeries() {
         let account = makeAccount()
         BalanceStore.record(1_000, on: day, for: account, in: context)
@@ -136,6 +187,17 @@ final class BalanceStoreTests: XCTestCase {
     }
 
     // MARK: - Deleting and ordering
+
+    func testDeletingAnEntryFallsBackToThePreviousBalance() {
+        let account = makeAccount()
+        BalanceStore.record(1_000, on: day, for: account, in: context)
+        let later = BalanceStore.record(1_100, on: laterDay, for: account, in: context)
+
+        BalanceStore.delete(later, in: context)
+
+        XCTAssertEqual(account.entries.count, 1)
+        XCTAssertEqual(account.currentAmount, 1_000)
+    }
 
     func testDeletingAnAccountTakesItsEntriesWithIt() throws {
         let account = makeAccount()
@@ -158,6 +220,29 @@ final class BalanceStoreTests: XCTestCase {
         XCTAssertEqual(third.sortOrder, 0)
         XCTAssertEqual(first.sortOrder, 1)
         XCTAssertEqual(second.sortOrder, 2)
+    }
+
+    // MARK: - Model
+
+    func testAnUnknownTypeFromANewerBuildDegradesToBank() {
+        let account = makeAccount(type: .broker)
+        account.typeRawValue = "crypto"
+
+        XCTAssertEqual(account.type, .bank)
+    }
+
+    func testCurrencyCodesAreStoredUppercased() {
+        XCTAssertEqual(makeAccount(currency: "chf").currencyCode, "CHF")
+    }
+
+    func testAnEntryCanBeMovedToAnotherDay() {
+        let account = makeAccount()
+        let entry = BalanceStore.record(1_000, on: day, for: account, in: context)
+
+        entry.day = laterDay
+
+        XCTAssertEqual(entry.dayNumber, laterDay.rawValue)
+        XCTAssertEqual(account.ledger.entries.first?.day, laterDay)
     }
 
     // MARK: - Rate merging

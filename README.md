@@ -22,14 +22,13 @@ Built to [SPEC.md](SPEC.md).
 
 ## Status
 
-Scaffolded and unbuilt. Every file here was written on Linux, where no Swift
-toolchain or Xcode exists, so **nothing has been compiled or run**. Treat the
-first build on a Mac as the real verification.
+Scaffolded on Linux, then first built and tested on a Mac on 2026-09-23
+(Xcode 27, iOS 26.5 simulator): the full suite passes, 103 tests including
+the UI test.
 
-What *has* been verified against reality: all three ECB endpoints were fetched
-live on 2026-09-22 (daily = 29 currencies, 90-day = 64 business days, full
-history = 7,098 days back to 1999-01-04), and the parser tests run against
-byte-faithful fixtures cut from those downloads.
+The ECB endpoints were fetched live on 2026-09-22 (daily = 29 currencies,
+90-day = 64 business days, full history = 7,098 days back to 1999-01-04), and
+the parser tests run against byte-faithful fixtures cut from those downloads.
 
 ## Building
 
@@ -84,6 +83,10 @@ history correctly from data already on the device, with no re-fetch. A past
 point is never recomputed with today's rates — the line you saw last month is
 the line you see now.
 
+Only rates from 2015 on are kept (the ECB file starts in 1999, but it is one
+download either way). That is 93,000 rows instead of 221,000. To match, a
+balance can't be dated before 2015, so every entry has a rate to convert with.
+
 When no rate exists on or before a day, that day is marked "rates missing",
 excluded from the chart, and explained in a banner with a retry. It is never
 estimated, interpolated, or filled from a later rate.
@@ -93,8 +96,11 @@ estimated, interpolated, or filled from a later rate.
 `⌘U` in Xcode, or:
 
 ```sh
-xcodebuild test -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
+
+The scheme gathers code coverage for the app target; read it in Xcode's
+Report navigator, or with `xcrun xccov view --report <result bundle>`.
 
 Covering conversion and the EUR pivot, carry-forward, archive and unarchive,
 missing-rate handling, base-currency change, same-day entry merging, time-zone

@@ -75,7 +75,7 @@ A private, local-first iOS app for tracking personal net worth. The user updates
   - Daily XML: `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml`
   - Full history: `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml`
   - Claude Code should verify these endpoints before relying on them.
-- **First launch:** download the full history once so that backfilled entries have historical rates.
+- **First launch:** download the full history once so that backfilled entries have historical rates. Keep only rates from 2015-01-01 on (plus the last publication before it); older rates are discarded.
 - **Later launches:** if the last fetch was more than 24 hours ago, fetch the daily file (or a 90-day file to cover gaps). Merge by date and currency.
 - **On failure:** do so silently, keep the cached rates, and show "Rates as of <date>" in Settings with a manual refresh button.
 
@@ -87,7 +87,7 @@ A private, local-first iOS app for tracking personal net worth. The user updates
 - **Delete:** removes the account and all its entries after a confirmation that warns it rewrites history.
 
 ### Balance entry
-- Enter an amount with a date picker. The date defaults to today and can be set to the past for backfilling. Future dates are not allowed.
+- Enter an amount with a date picker. The date defaults to today and can be set to the past for backfilling, back to 2015-01-01 (the first rates kept). Future dates are not allowed.
 - **"Update all" flow:** the main monthly action. It steps through every active account, pre-fills the last known value, and lets the user edit or skip each one. It saves all entries with one date.
 - Account detail shows its entry history, with editing and deletion of individual entries.
 

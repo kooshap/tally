@@ -66,6 +66,9 @@ schemes:
       targets:
         Tally: all
     test:
+      gatherCoverageData: true
+      coverageTargets:
+        - Tally
       targets:
         - TallyTests
         - TallyUITests

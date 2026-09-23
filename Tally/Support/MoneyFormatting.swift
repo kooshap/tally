@@ -17,9 +17,9 @@ enum MoneyFormatting {
         let formatted: String
         switch magnitude {
         case 1_000_000...:
-            formatted = (amount / 1_000_000).formatted(.number.precision(.fractionLength(0...1))) + "M"
+            formatted = (amount / 1_000_000).formatted(.number.locale(locale).precision(.fractionLength(0...1))) + "M"
         case 10_000...:
-            formatted = (amount / 1_000).formatted(.number.precision(.fractionLength(0))) + "k"
+            formatted = (amount / 1_000).formatted(.number.locale(locale).precision(.fractionLength(0))) + "k"
         default:
             return string(amount, code: code, locale: locale)
         }
@@ -32,6 +32,19 @@ enum MoneyFormatting {
         if amount > 0 { return "+\(formatted)" }
         if amount < 0 { return "−\(formatted)" }
         return formatted
+    }
+
+    /// What an amount field is pre-filled with: no symbol, no grouping, and the
+    /// locale's decimal separator, so `parse` reads back exactly this amount.
+    /// `"\(amount)"` would not survive a round trip in a locale such as German,
+    /// where the `.` it writes is a grouping separator.
+    static func editableString(_ amount: Decimal, locale: Locale = .current) -> String {
+        amount.formatted(
+            .number
+                .locale(locale)
+                .grouping(.never)
+                .precision(.fractionLength(0...10))
+        )
     }
 
     /// Reads a typed amount, tolerating grouping separators and a stray symbol.
