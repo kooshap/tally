@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct AccountsListView: View {
     @Environment(AppSettings.self) private var settings
@@ -99,13 +99,13 @@ struct AccountRow: View {
     /// currency, so the list adds up to the headline on screen.
     private var convertedText: String? {
         guard account.currencyCode != settings.baseCurrency,
-              let entry = account.latestEntry,
-              let converted = rates.convert(
-                  entry.amount,
-                  from: account.currencyCode,
-                  to: settings.baseCurrency,
-                  on: entry.day
-              )
+            let entry = account.latestEntry,
+            let converted = rates.convert(
+                entry.amount,
+                from: account.currencyCode,
+                to: settings.baseCurrency,
+                on: entry.day
+            )
         else { return nil }
         return MoneyFormatting.string(converted, code: settings.baseCurrency)
     }
@@ -140,8 +140,13 @@ struct AccountRow: View {
     }
 }
 
-private extension RatesCoordinator {
-    func convert(_ amount: Decimal, from source: String, to target: String, on day: CalendarDay) -> Decimal? {
+extension RatesCoordinator {
+    fileprivate func convert(
+        _ amount: Decimal,
+        from source: String,
+        to target: String,
+        on day: CalendarDay
+    ) -> Decimal? {
         table.convert(amount, from: source, to: target, on: day)
     }
 }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 final class CurrencyCatalogTests: XCTestCase {
@@ -31,7 +32,8 @@ final class CurrencyCatalogTests: XCTestCase {
 
     func testDisplayNameIsLocalizedAndCarriesTheCode() {
         XCTAssertEqual(CurrencyCatalog.displayName("USD", locale: Locale(identifier: "en_US")), "US Dollar (USD)")
-        XCTAssertEqual(CurrencyCatalog.displayName("CHF", locale: Locale(identifier: "de_DE")), "Schweizer Franken (CHF)")
+        XCTAssertEqual(
+            CurrencyCatalog.displayName("CHF", locale: Locale(identifier: "de_DE")), "Schweizer Franken (CHF)")
     }
 
     func testDisplayNameFallsBackToTheBareCode() {

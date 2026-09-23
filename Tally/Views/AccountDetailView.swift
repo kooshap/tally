@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct AccountDetailView: View {
     @Bindable var account: Account
@@ -105,7 +105,9 @@ struct AccountDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This rewrites your net worth history as though the account never existed. Archiving instead keeps the past intact.")
+            Text(
+                "This rewrites your net worth history as though the account never existed. Archiving instead keeps the past intact."
+            )
         }
     }
 

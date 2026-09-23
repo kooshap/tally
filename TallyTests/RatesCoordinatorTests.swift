@@ -1,5 +1,6 @@
-import XCTest
 import SwiftData
+import XCTest
+
 @testable import Tally
 
 /// §5: which ECB file is fetched when, and what survives a failed fetch. The
@@ -135,7 +136,8 @@ final class RatesCoordinatorTests: XCTestCase {
     // MARK: - Cache
 
     func testLoadCachedReadsWhatAnEarlierLaunchStored() async throws {
-        try RateStore.merge([FXQuote(day: september22, currencyCode: "CHF", unitsPerEUR: Decimal(string: "0.9393")!)], into: context)
+        try RateStore.merge(
+            [FXQuote(day: september22, currencyCode: "CHF", unitsPerEUR: Decimal(string: "0.9393")!)], into: context)
         try context.save()
         let coordinator = makeCoordinator(stub: Data())
 

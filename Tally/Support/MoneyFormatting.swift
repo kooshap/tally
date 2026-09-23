@@ -56,7 +56,8 @@ enum MoneyFormatting {
         if let value = try? Decimal(trimmed, format: .currency(code: code).locale(locale)) { return value }
 
         let separator = locale.decimalSeparator ?? "."
-        let cleaned = trimmed
+        let cleaned =
+            trimmed
             .filter { $0.isNumber || $0 == "-" || String($0) == separator }
             .replacingOccurrences(of: separator, with: ".")
         return Decimal(string: cleaned, locale: Locale(identifier: "en_US_POSIX"))

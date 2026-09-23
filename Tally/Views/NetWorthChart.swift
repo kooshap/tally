@@ -1,5 +1,5 @@
-import SwiftUI
 import Charts
+import SwiftUI
 
 /// Mode 1: total net worth as a line.
 struct NetWorthChart: View {
@@ -117,10 +117,14 @@ struct BreakdownChart: View {
         }
         .frame(height: 240)
         .onChange(of: selectedDate) { _, date in
-            guard let date else { selectedDay = nil; return }
-            selectedDay = points.min {
-                abs($0.day.date().timeIntervalSince(date)) < abs($1.day.date().timeIntervalSince(date))
-            }?.day
+            guard let date else {
+                selectedDay = nil
+                return
+            }
+            selectedDay =
+                points.min {
+                    abs($0.day.date().timeIntervalSince(date)) < abs($1.day.date().timeIntervalSince(date))
+                }?.day
         }
     }
 }

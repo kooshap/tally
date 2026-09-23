@@ -61,7 +61,8 @@ enum BalanceStore {
     static func unarchive(_ account: Account, in context: ModelContext) {
         guard let archivedOn = account.archivedOn else { return }
         if let entry = account.entries.first(where: { $0.dayNumber == archivedOn.rawValue }),
-           entry.amount == 0 {
+            entry.amount == 0
+        {
             delete(entry, in: context)
         }
         account.archivedOn = nil

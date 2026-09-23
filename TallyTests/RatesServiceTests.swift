@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 /// §8: stands in for a network monitor. Every request the app makes passes
@@ -11,25 +12,27 @@ final class RecordingURLProtocol: URLProtocol {
     nonisolated(unsafe) private static var _statusCode = 200
 
     static var requests: [URLRequest] {
-        lock.lock(); defer { lock.unlock() }
+        lock.lock()
+        defer { lock.unlock() }
         return _requests
     }
 
     static func reset(stub: Data, statusCode: Int = 200) {
-        lock.lock(); defer { lock.unlock() }
+        lock.lock()
+        defer { lock.unlock() }
         _requests = []
         _stub = stub
         _statusCode = statusCode
     }
 
-    override class func canInit(with request: URLRequest) -> Bool {
+    override static func canInit(with request: URLRequest) -> Bool {
         lock.lock()
         _requests.append(request)
         lock.unlock()
         return true
     }
 
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
         Self.lock.lock()

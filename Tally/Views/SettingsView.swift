@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
@@ -19,7 +19,9 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.navigationLink)
                 } footer: {
-                    Text("Changing this re-converts your whole history using the rates that applied on each day. Nothing is lost.")
+                    Text(
+                        "Changing this re-converts your whole history using the rates that applied on each day. Nothing is lost."
+                    )
                 }
 
                 Section {

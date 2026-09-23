@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 final class RateTableTests: XCTestCase {
@@ -11,7 +12,7 @@ final class RateTableTests: XCTestCase {
             FXQuote(day: friday, currencyCode: "USD", unitsPerEUR: Decimal(string: "1.1700")!),
             FXQuote(day: monday, currencyCode: "USD", unitsPerEUR: Decimal(string: "1.1500")!),
             FXQuote(day: friday, currencyCode: "CHF", unitsPerEUR: Decimal(string: "0.9400")!),
-            FXQuote(day: monday, currencyCode: "CHF", unitsPerEUR: Decimal(string: "0.9300")!)
+            FXQuote(day: monday, currencyCode: "CHF", unitsPerEUR: Decimal(string: "0.9300")!),
         ])
     }
 
@@ -36,7 +37,7 @@ final class RateTableTests: XCTestCase {
     func testLaterQuoteForTheSameDayWins() {
         let restated = RateTable(quotes: [
             FXQuote(day: monday, currencyCode: "USD", unitsPerEUR: 1),
-            FXQuote(day: monday, currencyCode: "USD", unitsPerEUR: 2)
+            FXQuote(day: monday, currencyCode: "USD", unitsPerEUR: 2),
         ])
         XCTAssertEqual(restated.unitsPerEUR("USD", on: monday), 2)
     }

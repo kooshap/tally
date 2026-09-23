@@ -46,15 +46,15 @@ enum ECBRatesParser {
             }
 
             guard let day = currentDay,
-                  let code = attributes["currency"],
-                  let raw = attributes["rate"]
+                let code = attributes["currency"],
+                let raw = attributes["rate"]
             else { return }
 
             // Retired currencies appear as rate="N/A" in older history files.
             // Skipping them leaves a gap, which the table reports as a missing
             // rate rather than papering over.
             guard let value = Decimal(string: raw, locale: Locale(identifier: "en_US_POSIX")),
-                  value > 0
+                value > 0
             else { return }
 
             quotes.append(FXQuote(day: day, currencyCode: code, unitsPerEUR: value))

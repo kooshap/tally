@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// Adds or edits one balance. Saving onto a day that already has an entry
 /// overwrites it — the one-per-day rule lives in `BalanceStore.record`.

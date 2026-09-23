@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 /// The gate's state machine. `authenticate` itself goes to LocalAuthentication

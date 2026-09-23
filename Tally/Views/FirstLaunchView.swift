@@ -19,13 +19,17 @@ struct FirstLaunchView: View {
                 } header: {
                     Text("Choose your currency")
                 } footer: {
-                    Text("Every account is converted into this currency for the total. You can change it later without losing any history.")
+                    Text(
+                        "Every account is converted into this currency for the total. You can change it later without losing any history."
+                    )
                 }
 
                 Section {
-                    Text("Your balances stay on this iPhone. Tally has no account to sign into and never uploads your data — the only thing it downloads is the European Central Bank's public exchange-rate file.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "Your balances stay on this iPhone. Tally has no account to sign into and never uploads your data — the only thing it downloads is the European Central Bank's public exchange-rate file."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Welcome to Tally")

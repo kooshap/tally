@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 enum ChartMode: String, CaseIterable, Identifiable {
     case total
@@ -167,9 +167,11 @@ private struct MissingRatesBanner: View {
             Label("Some days can't be shown", systemImage: "exclamationmark.triangle")
                 .font(.subheadline.weight(.medium))
 
-            Text("^[\(points.count) day](inflect: true) have no exchange rate for \(currencies), so they're left off the chart rather than estimated.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            Text(
+                "^[\(points.count) day](inflect: true) have no exchange rate for \(currencies), so they're left off the chart rather than estimated."
+            )
+            .font(.footnote)
+            .foregroundStyle(.secondary)
 
             Button("Download rates", action: onRetry)
                 .buttonStyle(.bordered)

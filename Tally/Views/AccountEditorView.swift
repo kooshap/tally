@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// Creates a new account or edits an existing one's identity fields.
 struct AccountEditorView: View {

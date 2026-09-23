@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct AppRootView: View {
     @Environment(AppSettings.self) private var settings

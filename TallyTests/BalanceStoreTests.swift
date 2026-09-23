@@ -1,5 +1,6 @@
-import XCTest
 import SwiftData
+import XCTest
+
 @testable import Tally
 
 @MainActor
@@ -72,14 +73,14 @@ final class BalanceStoreTests: XCTestCase {
     }
 
     func testTwoAccountsCanShareADay() {
-        let a = makeAccount()
-        let b = makeAccount()
+        let first = makeAccount()
+        let second = makeAccount()
 
-        BalanceStore.record(1, on: day, for: a, in: context)
-        BalanceStore.record(2, on: day, for: b, in: context)
+        BalanceStore.record(1, on: day, for: first, in: context)
+        BalanceStore.record(2, on: day, for: second, in: context)
 
-        XCTAssertEqual(a.entries.count, 1)
-        XCTAssertEqual(b.entries.count, 1)
+        XCTAssertEqual(first.entries.count, 1)
+        XCTAssertEqual(second.entries.count, 1)
     }
 
     // MARK: - Allowed dates
@@ -104,7 +105,9 @@ final class BalanceStoreTests: XCTestCase {
             let lowerBound = BalanceStore.allowedDates(calendar: calendar).lowerBound
 
             XCTAssertEqual(CalendarDay(date: lowerBound, calendar: calendar), RateStore.earliestDay, identifier)
-            XCTAssertEqual(calendar.dateComponents([.hour, .minute], from: lowerBound), DateComponents(hour: 0, minute: 0), identifier)
+            XCTAssertEqual(
+                calendar.dateComponents([.hour, .minute], from: lowerBound), DateComponents(hour: 0, minute: 0),
+                identifier)
         }
     }
 

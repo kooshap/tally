@@ -68,9 +68,11 @@ enum NetWorthCalculator {
         rates: RateTable,
         baseCurrency: String
     ) -> [NetWorthPoint] {
-        let days = Set(ledgers.flatMap { ledger in
-            ledger.entries.map { $0.day } + (ledger.archivedOn.map { [$0] } ?? [])
-        }).sorted()
+        let days = Set(
+            ledgers.flatMap { ledger in
+                ledger.entries.map { $0.day } + (ledger.archivedOn.map { [$0] } ?? [])
+            }
+        ).sorted()
 
         return days.map { day in
             point(on: day, ledgers: ledgers, rates: rates, baseCurrency: baseCurrency)
@@ -93,12 +95,14 @@ enum NetWorthCalculator {
             // uses must not be reported missing on its account.
             guard amount != 0 else { continue }
 
-            guard let converted = rates.convert(
-                amount,
-                from: ledger.currencyCode,
-                to: baseCurrency,
-                on: day
-            ) else {
+            guard
+                let converted = rates.convert(
+                    amount,
+                    from: ledger.currencyCode,
+                    to: baseCurrency,
+                    on: day
+                )
+            else {
                 missing.insert(ledger.currencyCode.uppercased())
                 continue
             }

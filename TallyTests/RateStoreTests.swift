@@ -1,5 +1,6 @@
-import XCTest
 import SwiftData
+import XCTest
+
 @testable import Tally
 
 @MainActor
@@ -38,28 +39,44 @@ final class RateStoreTests: XCTestCase {
 
     func testRatesBeforeTheCutoffAreNotStored() throws {
         let context = ModelContext(container)
-        try RateStore.merge([
-            FXQuote(day: CalendarDay(year: 1999, month: 1, day: 4), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.1789")!),
-            FXQuote(day: CalendarDay(year: 2014, month: 12, day: 30), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.2209")!),
-            FXQuote(day: CalendarDay(year: 2014, month: 12, day: 31), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.2141")!),
-            FXQuote(day: CalendarDay(year: 2015, month: 1, day: 2), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.2043")!)
-        ], into: context)
+        try RateStore.merge(
+            [
+                FXQuote(
+                    day: CalendarDay(year: 1999, month: 1, day: 4), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.1789")!),
+                FXQuote(
+                    day: CalendarDay(year: 2014, month: 12, day: 30), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.2209")!),
+                FXQuote(
+                    day: CalendarDay(year: 2014, month: 12, day: 31), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.2141")!),
+                FXQuote(
+                    day: CalendarDay(year: 2015, month: 1, day: 2), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.2043")!),
+            ], into: context)
 
         let stored = try context.fetch(FetchDescriptor<FXRate>())
-        XCTAssertEqual(stored.map(\.day).sorted(), [
-            CalendarDay(year: 2014, month: 12, day: 31),
-            CalendarDay(year: 2015, month: 1, day: 2)
-        ])
+        XCTAssertEqual(
+            stored.map(\.day).sorted(),
+            [
+                CalendarDay(year: 2014, month: 12, day: 31),
+                CalendarDay(year: 2015, month: 1, day: 2),
+            ])
     }
 
     /// New Year's Day has no ECB publication, so the cutoff day itself must
     /// still resolve to the last rate before it.
     func testABalanceOnTheCutoffDayStillHasARate() throws {
         let context = ModelContext(container)
-        try RateStore.merge([
-            FXQuote(day: CalendarDay(year: 2014, month: 12, day: 31), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.2141")!),
-            FXQuote(day: CalendarDay(year: 2015, month: 1, day: 2), currencyCode: "USD", unitsPerEUR: Decimal(string: "1.2043")!)
-        ], into: context)
+        try RateStore.merge(
+            [
+                FXQuote(
+                    day: CalendarDay(year: 2014, month: 12, day: 31), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.2141")!),
+                FXQuote(
+                    day: CalendarDay(year: 2015, month: 1, day: 2), currencyCode: "USD",
+                    unitsPerEUR: Decimal(string: "1.2043")!),
+            ], into: context)
 
         let table = try RateStore.loadTable(from: context)
 
@@ -92,8 +109,10 @@ final class RateStoreTests: XCTestCase {
     }
 
     func testMergeInBackgroundUpdatesARestatedRate() async throws {
-        _ = try await RateStore.mergeInBackground([FXQuote(day: day, currencyCode: "USD", unitsPerEUR: 2)], into: container)
-        let table = try await RateStore.mergeInBackground([FXQuote(day: day, currencyCode: "USD", unitsPerEUR: 3)], into: container)
+        _ = try await RateStore.mergeInBackground(
+            [FXQuote(day: day, currencyCode: "USD", unitsPerEUR: 2)], into: container)
+        let table = try await RateStore.mergeInBackground(
+            [FXQuote(day: day, currencyCode: "USD", unitsPerEUR: 3)], into: container)
 
         XCTAssertEqual(table.unitsPerEUR("USD", on: day), 3)
         XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<FXRate>()), 1)
@@ -101,7 +120,8 @@ final class RateStoreTests: XCTestCase {
 
     func testLoadTableInBackgroundSeesWhatTheMainContextSaved() async throws {
         let context = ModelContext(container)
-        try RateStore.merge([FXQuote(day: day, currencyCode: "GBP", unitsPerEUR: Decimal(string: "0.8578")!)], into: context)
+        try RateStore.merge(
+            [FXQuote(day: day, currencyCode: "GBP", unitsPerEUR: Decimal(string: "0.8578")!)], into: context)
         try context.save()
 
         let table = try await RateStore.loadTableInBackground(from: container)

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 final class NetWorthCalculatorTests: XCTestCase {
@@ -10,16 +11,17 @@ final class NetWorthCalculatorTests: XCTestCase {
     /// arithmetic in the way.
     private func flatRates(days: [CalendarDay] = []) -> RateTable {
         let all = days.isEmpty ? [jan, feb, mar] : days
-        return RateTable(quotes: all.flatMap { day in
-            ["USD", "CHF"].map { FXQuote(day: day, currencyCode: $0, unitsPerEUR: 1) }
-        })
+        return RateTable(
+            quotes: all.flatMap { day in
+                ["USD", "CHF"].map { FXQuote(day: day, currencyCode: $0, unitsPerEUR: 1) }
+            })
     }
 
     func testDebtIsSubtractedAndAssetsAdded() {
         let series = NetWorthCalculator.series(
             ledgers: [
                 AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 10_000)]),
-                AccountLedger(type: .debt, currencyCode: "EUR", entries: [(jan, 4_000)])
+                AccountLedger(type: .debt, currencyCode: "EUR", entries: [(jan, 4_000)]),
             ],
             rates: flatRates(),
             baseCurrency: "EUR"
@@ -35,7 +37,7 @@ final class NetWorthCalculatorTests: XCTestCase {
         let series = NetWorthCalculator.series(
             ledgers: [
                 AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 100), (mar, 300)]),
-                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(feb, 50)])
+                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(feb, 50)]),
             ],
             rates: flatRates(),
             baseCurrency: "EUR"
@@ -50,7 +52,7 @@ final class NetWorthCalculatorTests: XCTestCase {
         let series = NetWorthCalculator.series(
             ledgers: [
                 AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 1_000)]),
-                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(jan, 500), (feb, 700)])
+                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(jan, 500), (feb, 700)]),
             ],
             rates: flatRates(),
             baseCurrency: "EUR"
@@ -64,7 +66,7 @@ final class NetWorthCalculatorTests: XCTestCase {
         let series = NetWorthCalculator.series(
             ledgers: [
                 AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 1_000)]),
-                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(feb, 900)])
+                AccountLedger(type: .broker, currencyCode: "EUR", entries: [(feb, 900)]),
             ],
             rates: flatRates(),
             baseCurrency: "EUR"
@@ -123,7 +125,7 @@ final class NetWorthCalculatorTests: XCTestCase {
     func testConvertsEachAccountAtItsOwnDayRate() {
         let rates = RateTable(quotes: [
             FXQuote(day: jan, currencyCode: "USD", unitsPerEUR: 2),
-            FXQuote(day: feb, currencyCode: "USD", unitsPerEUR: 4)
+            FXQuote(day: feb, currencyCode: "USD", unitsPerEUR: 4),
         ])
         let ledgers = [AccountLedger(type: .bank, currencyCode: "USD", entries: [(jan, 1_000), (feb, 1_000)])]
 
@@ -139,7 +141,7 @@ final class NetWorthCalculatorTests: XCTestCase {
     func testPastPointsAreNotRepricedByNewerRates() {
         let rates = RateTable(quotes: [
             FXQuote(day: jan, currencyCode: "USD", unitsPerEUR: 2),
-            FXQuote(day: mar, currencyCode: "USD", unitsPerEUR: 10)
+            FXQuote(day: mar, currencyCode: "USD", unitsPerEUR: 10),
         ])
         let ledgers = [AccountLedger(type: .bank, currencyCode: "USD", entries: [(jan, 1_000)])]
 
@@ -176,7 +178,7 @@ final class NetWorthCalculatorTests: XCTestCase {
         let rates = RateTable(quotes: [FXQuote(day: jan, currencyCode: "USD", unitsPerEUR: 2)])
         let ledgers = [
             AccountLedger(type: .bank, currencyCode: "USD", entries: [(jan, 1_000)]),
-            AccountLedger(type: .bank, currencyCode: "JPY", entries: [(jan, 0)])
+            AccountLedger(type: .bank, currencyCode: "JPY", entries: [(jan, 0)]),
         ]
 
         let series = NetWorthCalculator.series(ledgers: ledgers, rates: rates, baseCurrency: "EUR")

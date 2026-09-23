@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Tally
 
 final class ECBRatesParserTests: XCTestCase {
@@ -28,11 +29,13 @@ final class ECBRatesParserTests: XCTestCase {
         let quotes = try ECBRatesParser.parse(fixture("eurofxref-hist-sample"))
         let days = Set(quotes.map(\.day))
 
-        XCTAssertEqual(days, [
-            CalendarDay(year: 2026, month: 9, day: 18),
-            CalendarDay(year: 2026, month: 9, day: 21),
-            CalendarDay(year: 2026, month: 9, day: 22)
-        ])
+        XCTAssertEqual(
+            days,
+            [
+                CalendarDay(year: 2026, month: 9, day: 18),
+                CalendarDay(year: 2026, month: 9, day: 21),
+                CalendarDay(year: 2026, month: 9, day: 22),
+            ])
     }
 
     /// The gap between Friday the 18th and Monday the 21st is a real weekend in

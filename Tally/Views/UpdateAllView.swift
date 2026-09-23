@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// §6: the monthly action. Steps through every active account with the last
 /// known figure pre-filled, lets each one be edited or skipped, and writes

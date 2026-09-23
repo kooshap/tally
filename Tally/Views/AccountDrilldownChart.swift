@@ -1,5 +1,5 @@
-import SwiftUI
 import Charts
+import SwiftUI
 
 /// Mode 3: one account's line, in its own currency, with a toggle for the
 /// portfolio currency.
@@ -56,10 +56,13 @@ struct AccountDrilldownChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Picker("Account", selection: Binding(
-                get: { selectedAccount?.id },
-                set: { selectedAccountID = $0 }
-            )) {
+            Picker(
+                "Account",
+                selection: Binding(
+                    get: { selectedAccount?.id },
+                    set: { selectedAccountID = $0 }
+                )
+            ) {
                 ForEach(accounts) { account in
                     Text(account.name).tag(Optional(account.id))
                 }

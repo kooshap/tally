@@ -76,8 +76,8 @@ struct RateTable: Sendable {
         let target = target.uppercased()
         if source == target { return amount }
         guard let sourceRate = unitsPerEUR(source, on: day),
-              let targetRate = unitsPerEUR(target, on: day),
-              sourceRate != 0
+            let targetRate = unitsPerEUR(target, on: day),
+            sourceRate != 0
         else { return nil }
         return amount / sourceRate * targetRate
     }
