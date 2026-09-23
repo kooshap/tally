@@ -1,0 +1,15 @@
+# swift-format owns layout: indentation, line length, commas, and where braces
+# go. SwiftLint checks everything else. The rules below would otherwise flag
+# the formatter's own output.
+included:
+  - Tally
+  - TallyTests
+  - TallyUITests
+
+disabled_rules:
+  - line_length # swift-format wraps code at 120; what's left is string literals
+  - trailing_comma # swift-format adds them to multi-line collections
+
+opening_brace:
+  ignore_multiline_statement_conditions: true
+  ignore_multiline_function_signatures: true

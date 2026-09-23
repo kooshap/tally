@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -8,10 +8,30 @@ permissions:
 
 # A newer push to the same branch supersedes a run still in progress.
 concurrency:
-  group: tests-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Format and lint
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # Homebrew updates first, so these are the same versions `brew bundle`
+      # gives a developer today, not whatever the runner image shipped with.
+      - name: Install swift-format and SwiftLint
+        run: |
+          brew install swift-format swiftlint
+          echo "swift-format $(swift-format --version), SwiftLint $(swiftlint version)"
+
+      - name: Check formatting
+        run: swift-format lint --strict --recursive --parallel Tally TallyTests TallyUITests
+
+      - name: Lint
+        run: swiftlint lint --strict --reporter github-actions-logging
+
   test:
     name: Unit and UI tests
     # Pinned rather than macos-latest, so a runner image change can't
@@ -45,7 +65,8 @@ jobs:
             -destination "$DESTINATION" \
             -resultBundlePath TestResults.xcresult \
             -quiet \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
 
       - name: Report coverage
         if: ${{ !cancelled() && hashFiles('TestResults.xcresult/**') != '' }}

@@ -32,10 +32,12 @@ the parser tests run against byte-faithful fixtures cut from those downloads.
 
 ## Building
 
-Requires a Mac with Xcode 16 (iOS 18 SDK).
+Requires a Mac with Xcode 16 (iOS 18 SDK) or later. The app builds in the
+Swift 6 language mode.
 
 ```sh
-brew install xcodegen
+brew bundle          # xcodegen, swift-format, swiftlint, lefthook
+lefthook install     # the pre-commit hook
 xcodegen generate
 open Tally.xcodeproj
 ```
@@ -107,6 +109,21 @@ missing-rate handling, base-currency change, same-day entry merging, time-zone
 and DST stability, the three real ECB file shapes (including `N/A` rates and a
 truncated file), and a `URLProtocol` recorder standing in for §8's network
 monitor.
+
+## Code style
+
+`swift-format` owns layout (`.swift-format`: 4 spaces, 120 columns) and
+SwiftLint checks the rest (`.swiftlint.yml`, which turns off the rules that
+would fight the formatter). The pre-commit hook formats and lints the Swift
+files being committed. To run them over everything:
+
+```sh
+swift-format format --in-place --recursive Tally TallyTests TallyUITests
+swiftlint lint --strict
+```
+
+On every push, CI runs both alongside the full test suite, which it builds
+with warnings treated as errors.
 
 ## Not in v1
 
