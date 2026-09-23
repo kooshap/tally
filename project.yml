@@ -2,16 +2,17 @@ name: Tally
 options:
   bundleIdPrefix: com.kooshap
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
   createIntermediateGroups: true
+  developmentLanguage: en
 
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    SWIFT_VERSION: "5.10"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""
     CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
 
 targets:
   Tally:
@@ -23,10 +24,12 @@ targets:
       path: Support/Info.plist
       properties:
         CFBundleDisplayName: Tally
+        CFBundleLocalizations: [en, de]
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
-        # No networking of any kind: declare no ATS exceptions, claim no encryption.
+        NSFaceIDUsageDescription: Unlocks Tally so your balances stay private if someone else picks up your phone.
+        # The only host the app ever contacts is the ECB, over HTTPS.
         ITSAppUsesNonExemptEncryption: false
     settings:
       base:
@@ -46,6 +49,17 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kooshap.tally.tests
 
+  TallyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: TallyUITests
+    dependencies:
+      - target: Tally
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kooshap.tally.uitests
+
 schemes:
   Tally:
     build:
@@ -54,3 +68,4 @@ schemes:
     test:
       targets:
         - TallyTests
+        - TallyUITests

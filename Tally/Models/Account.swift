@@ -1,49 +1,74 @@
 import Foundation
 import SwiftData
 
-/// One thing you own or owe. Its worth is the most recent `ValueSnapshot`;
-/// older snapshots are kept so the balance has a history.
 @Model
 final class Account {
+    var id: UUID = UUID()
     var name: String = ""
-    /// Stored raw so the enum can gain cases without a migration.
-    var kindRawValue: String = AccountKind.cash.rawValue
-    var notes: String = ""
+    /// Stored raw so an unknown value from a newer build degrades instead of crashing.
+    var typeRawValue: String = AccountType.bank.rawValue
+    var currencyCode: String = CurrencyCatalog.base
+    var notes: String?
+    var sortOrder: Int = 0
     var createdAt: Date = Date.now
+    /// `yyyymmdd`, or nil while active. See `CalendarDay` for why it isn't a `Date`.
+    var archivedOnDayNumber: Int?
 
-    @Relationship(deleteRule: .cascade, inverse: \ValueSnapshot.account)
-    var snapshots: [ValueSnapshot] = []
+    @Relationship(deleteRule: .cascade, inverse: \BalanceEntry.account)
+    var entries: [BalanceEntry] = []
 
-    init(name: String, kind: AccountKind, notes: String = "", createdAt: Date = .now) {
+    init(
+        name: String,
+        type: AccountType,
+        currencyCode: String,
+        notes: String? = nil,
+        sortOrder: Int = 0,
+        createdAt: Date = .now
+    ) {
+        self.id = UUID()
         self.name = name
-        self.kindRawValue = kind.rawValue
+        self.typeRawValue = type.rawValue
+        self.currencyCode = currencyCode.uppercased()
         self.notes = notes
+        self.sortOrder = sortOrder
         self.createdAt = createdAt
     }
 
-    var kind: AccountKind {
-        get { AccountKind(rawValue: kindRawValue) ?? .otherAsset }
-        set { kindRawValue = newValue.rawValue }
+    var type: AccountType {
+        get { AccountType(rawValue: typeRawValue) ?? .bank }
+        set { typeRawValue = newValue.rawValue }
     }
 
-    var latestSnapshot: ValueSnapshot? {
-        snapshots.max { $0.recordedAt < $1.recordedAt }
+    var archivedOn: CalendarDay? {
+        get { archivedOnDayNumber.flatMap(CalendarDay.init(rawValue:)) }
+        set { archivedOnDayNumber = newValue?.rawValue }
     }
 
-    /// Always non-negative: a mortgage of 400k is stored as 400_000, not -400_000.
-    var currentValue: Decimal {
-        latestSnapshot?.amount ?? 0
+    var isArchived: Bool { archivedOnDayNumber != nil }
+
+    /// Oldest-first, which is the order the calculator and the history list want.
+    var sortedEntries: [BalanceEntry] {
+        entries.sorted { $0.dayNumber < $1.dayNumber }
     }
 
-    /// Snapshots oldest-first, for history lists and charts.
-    var history: [ValueSnapshot] {
-        snapshots.sorted { $0.recordedAt < $1.recordedAt }
+    var latestEntry: BalanceEntry? {
+        entries.max { $0.dayNumber < $1.dayNumber }
     }
 
-    func record(_ amount: Decimal, on date: Date = .now) -> ValueSnapshot {
-        let snapshot = ValueSnapshot(amount: amount, recordedAt: date)
-        snapshot.account = self
-        snapshots.append(snapshot)
-        return snapshot
+    /// The account's own currency, not converted.
+    var currentAmount: Decimal {
+        latestEntry?.amount ?? 0
+    }
+
+    /// The pure-value form the calculator works on.
+    var ledger: AccountLedger {
+        AccountLedger(
+            id: id,
+            name: name,
+            type: type,
+            currencyCode: currencyCode,
+            archivedOn: archivedOn,
+            entries: sortedEntries.map { (day: $0.day, amount: $0.amount) }
+        )
     }
 }

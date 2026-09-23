@@ -1,42 +1,39 @@
 # Tally
 
-A net worth tracker for iPhone that works entirely offline.
+A private, local-first net worth tracker for iPhone. You update your balances by
+hand, roughly once a month; Tally converts every account into one portfolio
+currency and charts your net worth over time.
 
-Every mainstream net worth app asks you to hand your bank credentials to an
-aggregator. Tally doesn't. You type in what you own and what you owe, and the
-numbers stay in a local SwiftData store on your device. There is no account, no
-sign-in, no sync, and no networking code anywhere in the app.
+Built to [SPEC.md](SPEC.md).
+
+## Principles
+
+- **Your data never leaves the device.** No account, no sync, no analytics, no
+  crash reporting, no third-party packages.
+- **One network call, and it isn't about you.** Tally downloads the European
+  Central Bank's public exchange-rate file over an ephemeral `URLSession`
+  carrying no cookies, identifiers, or app data. A unit test asserts that the
+  ECB is the only host ever contacted.
+- **No CloudKit.** The SwiftData store sits in Application Support and rides
+  along in the standard encrypted iPhone backup. That is the backup strategy.
+- **Fully usable offline**, on the last rates it cached, which it dates for you.
+- App Store privacy label: **Data Not Collected**, with a `PrivacyInfo.xcprivacy`
+  declaring the one required-reason API in use (`UserDefaults`, CA92.1).
 
 ## Status
 
-Early scaffold. The model layer and core screens exist; it has not yet been
-built or run on a device.
+Scaffolded and unbuilt. Every file here was written on Linux, where no Swift
+toolchain or Xcode exists, so **nothing has been compiled or run**. Treat the
+first build on a Mac as the real verification.
 
-## What's here
-
-```
-project.yml            XcodeGen spec — the Xcode project is generated, not committed
-Tally/
-  TallyApp.swift       App entry point, local-only model container
-  Models/              Account, ValueSnapshot, AccountKind, NetWorthSummary
-  Views/               Net worth header, account list, add/edit, value history
-  Support/             Currency formatting
-TallyTests/            Unit tests for the arithmetic and model behaviour
-```
-
-## Data model
-
-An **Account** is one thing you own or owe. Its worth is the most recent
-**ValueSnapshot**; older snapshots are kept, so every balance has a history you
-can look back through. **AccountKind** alone decides which side of the ledger an
-account falls on, so a mortgage of 400,000 is stored as a positive 400,000 and
-subtracted at the point of totalling — balances are never stored negative.
-
-All money is `Decimal`, not `Double`, so repeated addition doesn't drift.
+What *has* been verified against reality: all three ECB endpoints were fetched
+live on 2026-09-22 (daily = 29 currencies, 90-day = 64 business days, full
+history = 7,098 days back to 1999-01-04), and the parser tests run against
+byte-faithful fixtures cut from those downloads.
 
 ## Building
 
-Requires a Mac with Xcode 15 or later (SwiftData needs iOS 17+).
+Requires a Mac with Xcode 16 (iOS 18 SDK).
 
 ```sh
 brew install xcodegen
@@ -44,34 +41,72 @@ xcodegen generate
 open Tally.xcodeproj
 ```
 
-`Tally.xcodeproj` is generated and gitignored — change targets and build
-settings in `project.yml`, then re-run `xcodegen generate`.
+`Tally.xcodeproj` is generated and gitignored — edit `project.yml` and re-run
+`xcodegen generate`. Set your own `DEVELOPMENT_TEAM` there before running on a
+device.
 
-Set your own `PRODUCT_BUNDLE_IDENTIFIER` and `DEVELOPMENT_TEAM` in
-`project.yml` before running on a physical device.
+## Layout
+
+```
+project.yml                 XcodeGen spec (iOS 18, iPhone, portrait)
+SPEC.md                     The build spec this implements
+Tally/
+  Domain/                   Pure value types — no SwiftData, no SwiftUI
+    CalendarDay             A day with no time zone (see below)
+    AccountType             bank / broker / realEstate / debt, and the sign
+    RateTable               Rate lookup and EUR-pivot conversion
+    NetWorthCalculator      §4 in full: carry-forward, archiving, frozen rates
+    CurrencyCatalog         The 29 ECB currencies, plus EUR
+  Models/                   SwiftData: Account, BalanceEntry, FXRate
+    BalanceStore            The one-entry-per-day and archive rules
+    RateStore               Merge-by-day-and-currency
+    AppSettings             Base currency, Face ID, last fetch
+  Rates/                    ECBEndpoint, ECBRatesParser, RatesService, coordinator
+  Views/                    Dashboard + 3 chart modes, accounts, update-all, settings
+  Resources/                String Catalog (en/de), PrivacyInfo.xcprivacy
+TallyTests/                 Domain, store, parser, and network-host tests
+TallyUITests/               The "update all" flow
+```
+
+## Two decisions worth knowing
+
+**Days are not `Date`s.** `CalendarDay` stores `yyyymmdd` as an integer. A
+balance is a fact about a day, not a moment: storing instants would mean a
+figure entered on the 31st in Zurich could read as the 30th or the 1st depending
+on where it is opened, and matching an entry to that day's ECB rate would depend
+on the reader's time zone. This also makes "one entry per account per day" an
+exact integer comparison.
+
+**Rates are stored against the euro and never re-priced.** The ECB publishes
+units-per-euro, and that is what gets cached. Converting C→B routes through EUR
+using *day D's* rates, so changing your portfolio currency re-prices the entire
+history correctly from data already on the device, with no re-fetch. A past
+point is never recomputed with today's rates — the line you saw last month is
+the line you see now.
+
+When no rate exists on or before a day, that day is marked "rates missing",
+excluded from the chart, and explained in a banner with a retry. It is never
+estimated, interpolated, or filled from a later rate.
 
 ## Tests
 
-In Xcode, ⌘U. From the command line:
+`⌘U` in Xcode, or:
 
 ```sh
-xcodebuild test -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
-## One currency
+Covering conversion and the EUR pivot, carry-forward, archive and unarchive,
+missing-rate handling, base-currency change, same-day entry merging, time-zone
+and DST stability, the three real ECB file shapes (including `N/A` rates and a
+truncated file), and a `URLProtocol` recorder standing in for §8's network
+monitor.
 
-Tally has no exchange rates, because fetching them would mean going online.
-Accounts are therefore assumed to share a single currency — mixing them would
-silently produce a wrong total. Multi-currency support would need rates entered
-by hand, which is a deliberate open question rather than an oversight.
+## Not in v1
 
-## Roadmap
-
-- [ ] Net worth over time, charted from the snapshot history
-- [ ] Encrypted local backup / restore via a file you control
-- [ ] Recurring reminders to update balances
-- [ ] Per-account currency with hand-entered rates
-- [ ] App icon and launch screen
+Individual securities, reminders, CloudKit, iPad and Mac, widgets, file
+export/import, amortization, ownership shares, and any currency the ECB does not
+publish. See [SPEC.md §7](SPEC.md).
 
 ## License
 
