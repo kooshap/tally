@@ -45,8 +45,8 @@ open Tally.xcodeproj
 ```
 
 `Tally.xcodeproj` is generated and gitignored — edit `project.yml` and re-run
-`xcodegen generate`. Set your own `DEVELOPMENT_TEAM` there before running on a
-device.
+`xcodegen generate`. `DEVELOPMENT_TEAM` there is the team Xcode Cloud signs
+with; change it to your own to run a fork on a device.
 
 ## Layout
 
