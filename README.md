@@ -1,3 +1,5 @@
+<img src="Branding/tally-logo.svg" alt="Tally logo" width="96">
+
 # Tally
 
 A private, local-first net worth tracker for iPhone. You update your balances by
