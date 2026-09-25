@@ -167,8 +167,9 @@ private struct MissingRatesBanner: View {
             Label("Some days can't be shown", systemImage: "exclamationmark.triangle")
                 .font(.subheadline.weight(.medium))
 
+            // See UpdateAllView: the explicit specifier keeps the exported key "%lld".
             Text(
-                "^[\(points.count) day](inflect: true) have no exchange rate for \(currencies), so they're left off the chart rather than estimated."
+                "^[\(points.count, specifier: "%lld") day](inflect: true) have no exchange rate for \(currencies), so they're left off the chart rather than estimated."
             )
             .font(.footnote)
             .foregroundStyle(.secondary)

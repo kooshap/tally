@@ -145,6 +145,17 @@
         }
       }
     },
+    "Archived on %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archiviert am %@"
+          }
+        }
+      }
+    },
     "History": {
       "extractionState": "manual",
       "localizations": {
@@ -196,6 +207,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Konto löschen"
+          }
+        }
+      }
+    },
+    "Delete this account?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Konto löschen?"
           }
         }
       }
@@ -273,6 +295,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "In %@ anzeigen"
+          }
+        }
+      }
+    },
+    "Value": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wert"
+          }
+        }
+      }
+    },
+    "Selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausgewählt"
           }
         }
       }

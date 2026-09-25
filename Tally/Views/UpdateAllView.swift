@@ -81,7 +81,9 @@ struct UpdateAllView: View {
                     .keyboardType(.numbersAndPunctuation)
                     .accessibilityIdentifier("updateAll.amountField")
                 } header: {
-                    Text("Account \(index + 1) of \(accounts.count)")
+                    // The explicit specifier keeps Xcode's string export from
+                    // keying this as "%@", which the catalog doesn't translate.
+                    Text("Account \(index + 1, specifier: "%lld") of \(accounts.count, specifier: "%lld")")
                 } footer: {
                     if isNegativeAndDisallowed(account) {
                         Text("Only a bank account can hold a negative balance. Debts are entered as positive amounts.")

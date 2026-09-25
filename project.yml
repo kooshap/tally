@@ -54,6 +54,12 @@ targets:
     platform: iOS
     sources:
       - path: TallyUITests
+      # Copied as-is rather than compiled, so the German UI test can read
+      # every English source string without the catalog joining this target.
+      - path: Tally/Resources/Localizable.xcstrings
+        buildPhase:
+          copyFiles:
+            destination: resources
     dependencies:
       - target: Tally
     settings:

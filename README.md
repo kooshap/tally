@@ -81,7 +81,8 @@ Tally/
   Resources/                String Catalog (en/de), PrivacyInfo.xcprivacy
 TallyTests/                 Domain, store, form, parser, migration, and
                             network-host tests
-TallyUITests/               The "update all" flow, and the recovery screen
+TallyUITests/               The "update all" flow, the recovery screen, and
+                            a German walk-through
 ```
 
 ## Two decisions worth knowing
@@ -137,6 +138,13 @@ twice, and that only the newest three are kept. `StoreLoaderTests` opens a few
 random bytes as a store: the app reaches the recovery state, "Try again" keeps
 failing safely, and the file is byte-for-byte what it was. A UI test launches
 the real app against such a store.
+
+`GermanLocalizationUITests` runs the app in German and fails if a screen shows
+the English form of any string the catalog translates, which is what SwiftUI
+does when the key it looks up (`Account %lld of %lld`) isn't the one the
+catalog holds. Integer interpolations in localized text carry an explicit
+`specifier: "%lld"`: Xcode's string export can't see types and would otherwise
+add an untranslated `%@` copy of the key to the catalog.
 
 The rules the editors apply — validation, which amounts may be negative, which
 entry a swipe deletes, when the app re-locks — live in `Forms/`, `BalanceStore`,
