@@ -12,10 +12,7 @@ final class BalanceStoreTests: XCTestCase {
     private let laterDay = CalendarDay(year: 2026, month: 3, day: 5)
 
     override func setUp() async throws {
-        container = try ModelContainer(
-            for: Account.self, BalanceEntry.self, FXRate.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        container = try TallyStore.makeContainer(inMemory: true)
         context = ModelContext(container)
     }
 

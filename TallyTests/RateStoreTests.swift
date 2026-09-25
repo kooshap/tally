@@ -10,10 +10,7 @@ final class RateStoreTests: XCTestCase {
     private let day = CalendarDay(year: 2026, month: 9, day: 22)
 
     override func setUp() async throws {
-        container = try ModelContainer(
-            for: Account.self, BalanceEntry.self, FXRate.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        container = try TallyStore.makeContainer(inMemory: true)
     }
 
     override func tearDown() async throws {

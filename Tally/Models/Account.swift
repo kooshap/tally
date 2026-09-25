@@ -1,39 +1,43 @@
 import Foundation
 import SwiftData
 
-@Model
-final class Account {
-    var id: UUID = UUID()
-    var name: String = ""
-    /// Stored raw so an unknown value from a newer build degrades instead of crashing.
-    var typeRawValue: String = AccountType.bank.rawValue
-    var currencyCode: String = CurrencyCatalog.base
-    var notes: String?
-    var sortOrder: Int = 0
-    var createdAt: Date = Date.now
-    /// `yyyymmdd`, or nil while active. See `CalendarDay` for why it isn't a `Date`.
-    var archivedOnDayNumber: Int?
+extension TallySchemaV1 {
+    @Model
+    final class Account {
+        var id: UUID = UUID()
+        var name: String = ""
+        /// Stored raw so an unknown value from a newer build degrades instead of crashing.
+        var typeRawValue: String = AccountType.bank.rawValue
+        var currencyCode: String = CurrencyCatalog.base
+        var notes: String?
+        var sortOrder: Int = 0
+        var createdAt: Date = Date.now
+        /// `yyyymmdd`, or nil while active. See `CalendarDay` for why it isn't a `Date`.
+        var archivedOnDayNumber: Int?
 
-    @Relationship(deleteRule: .cascade, inverse: \BalanceEntry.account)
-    var entries: [BalanceEntry] = []
+        @Relationship(deleteRule: .cascade, inverse: \BalanceEntry.account)
+        var entries: [BalanceEntry] = []
 
-    init(
-        name: String,
-        type: AccountType,
-        currencyCode: String,
-        notes: String? = nil,
-        sortOrder: Int = 0,
-        createdAt: Date = .now
-    ) {
-        self.id = UUID()
-        self.name = name
-        self.typeRawValue = type.rawValue
-        self.currencyCode = currencyCode.uppercased()
-        self.notes = notes
-        self.sortOrder = sortOrder
-        self.createdAt = createdAt
+        init(
+            name: String,
+            type: AccountType,
+            currencyCode: String,
+            notes: String? = nil,
+            sortOrder: Int = 0,
+            createdAt: Date = .now
+        ) {
+            self.id = UUID()
+            self.name = name
+            self.typeRawValue = type.rawValue
+            self.currencyCode = currencyCode.uppercased()
+            self.notes = notes
+            self.sortOrder = sortOrder
+            self.createdAt = createdAt
+        }
     }
+}
 
+extension Account {
     var type: AccountType {
         get { AccountType(rawValue: typeRawValue) ?? .bank }
         set { typeRawValue = newValue.rawValue }

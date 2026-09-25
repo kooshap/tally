@@ -61,13 +61,16 @@ Tally/
     NetWorthCalculator      §4 in full: carry-forward, archiving, frozen rates
     CurrencyCatalog         The 29 ECB currencies, plus EUR
   Models/                   SwiftData: Account, BalanceEntry, FXRate
+    TallySchema             Versioned schema and migration plan — read it
+                            before changing a model
     BalanceStore            The one-entry-per-day and archive rules
     RateStore               Merge-by-day-and-currency
     AppSettings             Base currency, Face ID, last fetch
   Rates/                    ECBEndpoint, ECBRatesParser, RatesService, coordinator
   Views/                    Dashboard + 3 chart modes, accounts, update-all, settings
   Resources/                String Catalog (en/de), PrivacyInfo.xcprivacy
-TallyTests/                 Domain, store, parser, and network-host tests
+TallyTests/                 Domain, store, parser, migration, and
+                            network-host tests
 TallyUITests/               The "update all" flow
 ```
 
@@ -111,6 +114,12 @@ missing-rate handling, base-currency change, same-day entry merging, time-zone
 and DST stability, the three real ECB file shapes (including `N/A` rates and a
 truncated file), and a `URLProtocol` recorder standing in for §8's network
 monitor.
+
+`SchemaMigrationTests` opens `Fixtures/tally-v1.store`, a store written by the
+app before its models were versioned, and checks that every account, balance,
+and rate survives. It also fails if `TallySchemaV1` is edited in place: a model
+change belongs in a new schema version with a migration stage, and the fixture
+must still open under it.
 
 ## Code style
 

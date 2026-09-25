@@ -15,10 +15,7 @@ final class RatesCoordinatorTests: XCTestCase {
     private let september22 = CalendarDay(year: 2026, month: 9, day: 22)
 
     override func setUp() async throws {
-        container = try ModelContainer(
-            for: Account.self, BalanceEntry.self, FXRate.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        container = try TallyStore.makeContainer(inMemory: true)
         context = ModelContext(container)
         defaultsSuite = "tally.tests.\(UUID().uuidString)"
         settings = AppSettings(defaults: UserDefaults(suiteName: defaultsSuite)!)

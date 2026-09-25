@@ -39,10 +39,7 @@ enum UITestSupport {
 
     static func makeContainer() throws -> ModelContainer {
         let inMemory = isRunningUITests || isHostingUnitTests
-        let container = try ModelContainer(
-            for: Account.self, BalanceEntry.self, FXRate.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory)
-        )
+        let container = try TallyStore.makeContainer(inMemory: inMemory)
         seed(container)
         return container
     }
