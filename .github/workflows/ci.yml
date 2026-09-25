@@ -46,6 +46,21 @@ jobs:
       - name: Lint
         run: BuildTools/tool swiftlint lint --strict --reporter github-actions-logging
 
+      # Analyzer rules need the compiler invocations from a clean, non-quiet
+      # build, which the test job's -quiet build doesn't print. The log is kept
+      # in a file so it doesn't flood the step output.
+      - name: Build for analysis
+        run: |
+          BuildTools/tool xcodegen generate
+          xcodebuild build-for-testing \
+            -scheme Tally \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            > xcodebuild.log 2>&1 || { tail -50 xcodebuild.log; exit 1; }
+
+      - name: Analyze
+        run: BuildTools/tool swiftlint analyze --strict --compiler-log-path xcodebuild.log --reporter github-actions-logging
+
   test:
     name: Unit and UI tests
     # Pinned rather than macos-latest, so a runner image change can't

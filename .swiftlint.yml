@@ -43,6 +43,12 @@ opt_in_rules:
   - final_test_case
   - xct_specific_matcher
 
+# Run by `swiftlint analyze`, which reads a full xcodebuild log; `lint` skips
+# them. CI's lint job does this. unused_declaration is left off because it flags
+# @State that's only read through its `$` binding.
+analyzer_rules:
+  - unused_import
+
 opening_brace:
   ignore_multiline_statement_conditions: true
   ignore_multiline_function_signatures: true

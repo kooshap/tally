@@ -1,4 +1,3 @@
-import Foundation
 import SwiftData
 
 /// Caches ECB quotes and hands the domain layer an immutable `RateTable`.
