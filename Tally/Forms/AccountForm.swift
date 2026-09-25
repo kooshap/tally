@@ -27,6 +27,12 @@ struct AccountForm {
 
     var isEditing: Bool { account != nil }
 
+    /// Every balance is in the account's currency and signed by its type, so
+    /// changing either would silently rewrite the figures already recorded.
+    var isCurrencyAndTypeLocked: Bool {
+        account.map { !$0.entries.isEmpty } ?? false
+    }
+
     /// A new account starts in the portfolio currency.
     mutating func useCurrencyIfUnset(_ code: String) {
         if currencyCode.isEmpty { currencyCode = code }
@@ -59,8 +65,10 @@ struct AccountForm {
 
         if let account {
             account.name = trimmedName
-            account.type = type
-            account.currencyCode = currencyCode
+            if !isCurrencyAndTypeLocked {
+                account.type = type
+                account.currencyCode = currencyCode
+            }
             account.notes = notes
             return account
         }

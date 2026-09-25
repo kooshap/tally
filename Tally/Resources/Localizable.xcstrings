@@ -365,6 +365,17 @@
         }
       }
     },
+    "Currency and type can't change once an account has balances. To change them, archive this account and start a new one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Währung und Art lassen sich nicht mehr ändern, sobald ein Konto Kontostände hat. Archiviere dafür dieses Konto und lege ein neues an."
+          }
+        }
+      }
+    },
     "Enter what you owe as a positive number. Tally subtracts it from your net worth.": {
       "extractionState": "manual",
       "localizations": {

@@ -27,6 +27,7 @@ struct AccountEditorView: View {
                             Label(type.localizedName, systemImage: type.symbolName).tag(type)
                         }
                     }
+                    .disabled(form.isCurrencyAndTypeLocked)
 
                     Picker("Currency", selection: $form.currencyCode) {
                         ForEach(CurrencyCatalog.all, id: \.self) { code in
@@ -34,9 +35,18 @@ struct AccountEditorView: View {
                         }
                     }
                     .pickerStyle(.navigationLink)
+                    .disabled(form.isCurrencyAndTypeLocked)
                 } footer: {
-                    if form.type == .debt {
-                        Text("Enter what you owe as a positive number. Tally subtracts it from your net worth.")
+                    VStack(alignment: .leading, spacing: 8) {
+                        if form.isCurrencyAndTypeLocked {
+                            Text(
+                                "Currency and type can't change once an account has balances. To change them, archive this account and start a new one."
+                            )
+                            .accessibilityIdentifier("account.lockedFooter")
+                        }
+                        if form.type == .debt {
+                            Text("Enter what you owe as a positive number. Tally subtracts it from your net worth.")
+                        }
                     }
                 }
 

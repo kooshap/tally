@@ -164,4 +164,44 @@ final class AccountFormTests: XCTestCase {
         XCTAssertTrue(account.entries.isEmpty, "an opening balance only applies to a new account")
         XCTAssertEqual(try allAccounts().count, 1)
     }
+
+    // MARK: - Locking currency and type
+
+    func testANewAccountCanPickAnyCurrencyAndType() {
+        XCTAssertFalse(newAccountForm().isCurrencyAndTypeLocked)
+    }
+
+    func testAnAccountWithNoBalancesCanStillChangeCurrencyAndType() throws {
+        let account = Account(name: "Savings", type: .bank, currencyCode: "EUR")
+        context.insert(account)
+        var form = AccountForm(editing: account, locale: english)
+        form.type = .broker
+        form.currencyCode = "USD"
+
+        XCTAssertFalse(form.isCurrencyAndTypeLocked)
+        form.save(after: [account], in: context, today: today)
+
+        XCTAssertEqual(account.type, .broker)
+        XCTAssertEqual(account.currencyCode, "USD")
+    }
+
+    /// 250,000 recorded in EUR would otherwise read as 250,000 CHF, and a bank
+    /// balance turned debt would flip from adding to subtracting.
+    func testOnceAnAccountHasBalancesItsCurrencyAndTypeStay() throws {
+        let account = Account(name: "Flat", type: .realEstate, currencyCode: "EUR")
+        context.insert(account)
+        BalanceStore.record(250_000, on: today, for: account, in: context)
+        var form = AccountForm(editing: account, locale: english)
+        form.name = "Apartment"
+        form.type = .debt
+        form.currencyCode = "CHF"
+
+        XCTAssertTrue(form.isCurrencyAndTypeLocked)
+        XCTAssertTrue(form.canSave, "the name and notes can still be edited")
+        form.save(after: [account], in: context, today: today)
+
+        XCTAssertEqual(account.name, "Apartment")
+        XCTAssertEqual(account.type, .realEstate)
+        XCTAssertEqual(account.currencyCode, "EUR")
+    }
 }

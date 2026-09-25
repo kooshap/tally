@@ -48,6 +48,14 @@ final class GermanLocalizationUITests: XCTestCase {
         XCTAssertTrue(delete.waitForExistence(timeout: 5))
         try assertNoEnglishFallback(on: "account detail")
 
+        app.buttons["Bearbeiten"].tap()
+        let lockedFooter = app.staticTexts["account.lockedFooter"]
+        XCTAssertTrue(lockedFooter.waitForExistence(timeout: 5))
+        XCTAssertTrue(lockedFooter.label.hasPrefix("Währung und Art"), "locked footer reads \"\(lockedFooter.label)\"")
+        try assertNoEnglishFallback(on: "edit account")
+        app.buttons["Abbrechen"].tap()
+        XCTAssertTrue(lockedFooter.waitForNonExistence(timeout: 5))
+
         delete.tap()
         XCTAssertTrue(app.staticTexts["Dieses Konto löschen?"].waitForExistence(timeout: 5))
         try assertNoEnglishFallback(on: "delete confirmation")
