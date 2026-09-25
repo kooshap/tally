@@ -11,9 +11,8 @@ disabled_rules:
   - trailing_comma # swift-format adds them to multi-line collections
 
 # Opt-in rules about meaning, not layout. Left off on purpose:
-# implicitly_unwrapped_optional (idiomatic in tests), redundant_type_annotation
-# (@Model properties need their types spelled out), and unused_parameter (fires
-# on protocol conformances like XMLParserDelegate).
+# redundant_type_annotation (@Model properties need their types spelled out)
+# and unused_parameter (fires on protocol conformances like XMLParserDelegate).
 opt_in_rules:
   # Collections
   - contains_over_filter_count
@@ -33,10 +32,12 @@ opt_in_rules:
   # Likely bugs
   - force_unwrapping # off again in the test targets' own configs
   - identical_operands
+  - implicitly_unwrapped_optional # likewise
   - unhandled_throwing_task
   - unowned_variable_capture
   # SwiftUI
   - accessibility_label_for_image
+  - accessibility_trait_for_button
   - private_swiftui_state
   # Tests
   - empty_xctest_method

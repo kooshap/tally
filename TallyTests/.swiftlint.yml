@@ -1,4 +1,6 @@
 # A failed force unwrap in a test fails that test, which is what a test
-# should do anyway.
+# should do anyway. The same goes for an implicitly unwrapped property set
+# up in setUp().
 disabled_rules:
   - force_unwrapping
+  - implicitly_unwrapped_optional
