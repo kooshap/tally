@@ -115,6 +115,7 @@ struct AccountRow: View {
             Image(systemName: account.type.symbolName)
                 .frame(width: 28, height: 28)
                 .foregroundStyle(.tint)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(account.name)

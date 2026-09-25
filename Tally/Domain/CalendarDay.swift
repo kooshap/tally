@@ -63,11 +63,11 @@ struct CalendarDay: Hashable, Comparable, Codable, Sendable {
         return calendar.date(from: parts) ?? Date(timeIntervalSince1970: 0)
     }
 
-    static func today(_ calendar: Calendar = .current, now: Date = .now) -> CalendarDay {
-        CalendarDay(date: now, calendar: calendar)
+    static func today(_ calendar: Calendar = .current, now: Date = .now) -> Self {
+        Self(date: now, calendar: calendar)
     }
 
-    static func < (lhs: CalendarDay, rhs: CalendarDay) -> Bool {
+    static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.rawValue < rhs.rawValue
     }
 }

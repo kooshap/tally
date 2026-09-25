@@ -40,7 +40,7 @@ struct RateTable: Sendable {
         self.quotesByCurrency = grouped
     }
 
-    static let empty = RateTable(quotes: [])
+    static let empty = Self(quotes: [])
 
     var isEmpty: Bool { quotesByCurrency.isEmpty }
 

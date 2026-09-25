@@ -140,6 +140,7 @@ private struct DashboardEmptyState: View {
             Image(systemName: "chart.xyaxis.line")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text("No balances yet")
                 .font(.headline)
             Text("Add an account and enter what it's worth. The chart starts from your first entry.")

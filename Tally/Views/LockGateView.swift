@@ -8,6 +8,7 @@ struct LockGateView: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
 
             Text("Tally is locked")
                 .font(.headline)

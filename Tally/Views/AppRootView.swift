@@ -43,6 +43,7 @@ private struct PrivacyShade: View {
             Image(systemName: "lock.fill")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
         .ignoresSafeArea()
         .transition(.opacity)

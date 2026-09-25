@@ -149,7 +149,7 @@ final class BalanceEntryFormTests: XCTestCase {
 
         let saved = form.save(in: context, now: now)
 
-        XCTAssertTrue(saved === entry)
+        XCTAssertIdentical(saved, entry)
         XCTAssertEqual(account.entries.count, 1)
         XCTAssertEqual(entry.amount, 150)
         XCTAssertEqual(entry.updatedAt, now)

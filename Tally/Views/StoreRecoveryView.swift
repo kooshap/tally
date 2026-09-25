@@ -17,6 +17,7 @@ struct StoreRecoveryView: View {
                 Image(systemName: "externaldrive.badge.exclamationmark")
                     .font(.system(size: 44))
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
 
                 Text("Tally can't open your data")
                     .font(.headline)

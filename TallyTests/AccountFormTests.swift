@@ -156,7 +156,7 @@ final class AccountFormTests: XCTestCase {
 
         let saved = form.save(after: [account], in: context, today: today)
 
-        XCTAssertTrue(saved === account)
+        XCTAssertIdentical(saved, account)
         XCTAssertEqual(account.name, "New")
         XCTAssertEqual(account.type, .broker)
         XCTAssertNil(account.notes)
