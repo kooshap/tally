@@ -1,0 +1,16 @@
+version: 2
+
+updates:
+  # The workflows pin each action to a commit SHA, with the release it came
+  # from in a trailing comment; Dependabot bumps both together.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Let a release sit for a week before proposing it, so a compromised or
+    # broken one is likely caught and pulled first.
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

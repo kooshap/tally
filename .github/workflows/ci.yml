@@ -19,7 +19,7 @@ jobs:
     env:
       XCODE_APP: /Applications/Xcode_26.6.app
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # swift-format is built from source with this Xcode's compiler.
       - name: Select Xcode
@@ -28,7 +28,7 @@ jobs:
       # The tools are pinned in BuildTools/, so a new release upstream can't
       # fail a commit that changed nothing. Building swift-format takes a few
       # minutes, hence the cache; changing a pin changes the key.
-      - uses: actions/cache@v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             BuildTools/.build
@@ -57,7 +57,7 @@ jobs:
       DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Select Xcode
         run: |
@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload the result bundle
         if: ${{ failure() && hashFiles('TestResults.xcresult/**') != '' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: TestResults
           path: TestResults.xcresult
