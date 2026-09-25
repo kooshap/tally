@@ -38,12 +38,6 @@ struct AccountLedger: Sendable {
         return carried
     }
 
-    /// True once this account has anything to contribute on `day`.
-    func isActive(on day: CalendarDay) -> Bool {
-        if let archivedOn, archivedOn <= day { return false }
-        return entries.first.map { $0.day <= day } ?? false
-    }
-
     /// Mode 3's line: each balance on its own day, in the account's currency,
     /// or converted to `currency` at that day's rate. A day with no rate is left
     /// out rather than estimated, as on the net worth chart.

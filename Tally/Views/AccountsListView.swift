@@ -2,10 +2,6 @@ import SwiftData
 import SwiftUI
 
 struct AccountsListView: View {
-    @Environment(AppSettings.self) private var settings
-    @Environment(RatesCoordinator.self) private var rates
-    @Environment(\.modelContext) private var modelContext
-
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     @State private var isAddingAccount = false
