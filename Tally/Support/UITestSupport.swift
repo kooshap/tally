@@ -27,6 +27,9 @@ enum UITestSupport {
     static func makeSettings() -> AppSettings {
         guard isRunningUITests else { return AppSettings() }
 
+        // Only nil for a reserved suite name. Falling back to `.standard` would
+        // let the test wipe real settings, so crash instead.
+        // swiftlint:disable:next force_unwrapping
         let suite = UserDefaults(suiteName: "tally.uitests")!
         suite.removePersistentDomain(forName: "tally.uitests")
 

@@ -10,8 +10,8 @@ disabled_rules:
   - line_length # swift-format wraps code at 120; what's left is string literals
   - trailing_comma # swift-format adds them to multi-line collections
 
-# Opt-in rules about meaning, not layout. Left off on purpose: force_unwrapping
-# and implicitly_unwrapped_optional (idiomatic in tests), redundant_type_annotation
+# Opt-in rules about meaning, not layout. Left off on purpose:
+# implicitly_unwrapped_optional (idiomatic in tests), redundant_type_annotation
 # (@Model properties need their types spelled out), and unused_parameter (fires
 # on protocol conformances like XMLParserDelegate).
 opt_in_rules:
@@ -31,6 +31,7 @@ opt_in_rules:
   - shorthand_optional_binding
   - toggle_bool
   # Likely bugs
+  - force_unwrapping # off again in the test targets' own configs
   - identical_operands
   - unhandled_throwing_task
   - unowned_variable_capture

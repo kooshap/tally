@@ -1,0 +1,4 @@
+# A failed force unwrap in a test fails that test, which is what a test
+# should do anyway.
+disabled_rules:
+  - force_unwrapping
