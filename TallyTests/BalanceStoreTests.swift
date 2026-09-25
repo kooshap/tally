@@ -199,6 +199,43 @@ final class BalanceStoreTests: XCTestCase {
         XCTAssertEqual(account.currentAmount, 1_000)
     }
 
+    /// The account screen lists entries newest-first, so a swipe on the top
+    /// row must delete the latest balance, not the oldest.
+    func testDeletingByListPositionCountsFromTheNewest() {
+        let account = makeAccount()
+        let earliest = CalendarDay(year: 2026, month: 1, day: 5)
+        BalanceStore.record(100, on: earliest, for: account, in: context)
+        BalanceStore.record(200, on: day, for: account, in: context)
+        BalanceStore.record(300, on: laterDay, for: account, in: context)
+
+        BalanceStore.deleteEntries(at: [0], newestFirstOf: account, in: context)
+
+        XCTAssertEqual(account.sortedEntries.map(\.amount), [100, 200])
+        XCTAssertEqual(account.currentAmount, 200)
+    }
+
+    func testDeletingSeveralListPositionsAtOnce() {
+        let account = makeAccount()
+        let earliest = CalendarDay(year: 2026, month: 1, day: 5)
+        BalanceStore.record(100, on: earliest, for: account, in: context)
+        BalanceStore.record(200, on: day, for: account, in: context)
+        BalanceStore.record(300, on: laterDay, for: account, in: context)
+
+        BalanceStore.deleteEntries(at: [0, 2], newestFirstOf: account, in: context)
+
+        XCTAssertEqual(account.sortedEntries.map(\.amount), [200])
+    }
+
+    func testDeletingAnEntryFromTheListFallsBackToThePreviousBalance() {
+        let account = makeAccount()
+        BalanceStore.record(1_000, on: day, for: account, in: context)
+        BalanceStore.record(1_100, on: laterDay, for: account, in: context)
+
+        BalanceStore.deleteEntries(at: [0], newestFirstOf: account, in: context)
+
+        XCTAssertEqual(account.currentAmount, 1_000)
+    }
+
     func testDeletingAnAccountTakesItsEntriesWithIt() throws {
         let account = makeAccount()
         BalanceStore.record(1_000, on: day, for: account, in: context)

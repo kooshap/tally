@@ -41,6 +41,12 @@ final class AppSettings {
         didSet { defaults.set(hasCompletedSetup, forKey: Key.hasCompletedSetup) }
     }
 
+    /// §3: the base currency is chosen once, at first launch.
+    func completeSetup(baseCurrency: String) {
+        self.baseCurrency = baseCurrency
+        hasCompletedSetup = true
+    }
+
     /// §5: refresh at most once a day.
     var needsRateRefresh: Bool {
         guard let lastRatesFetch else { return true }

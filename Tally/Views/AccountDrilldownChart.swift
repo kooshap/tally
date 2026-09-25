@@ -37,20 +37,8 @@ struct AccountDrilldownChart: View {
 
     private var samples: [Sample] {
         guard let account = selectedAccount else { return [] }
-        return account.sortedEntries.compactMap { entry in
-            let amount: Decimal?
-            if showInBaseCurrency && isForeign {
-                amount = rates.convert(
-                    entry.amount,
-                    from: account.currencyCode,
-                    to: baseCurrency,
-                    on: entry.day
-                )
-            } else {
-                amount = entry.amount
-            }
-            guard let amount else { return nil }
-            return Sample(id: entry.dayNumber, date: entry.day.date(), amount: amount.plotted)
+        return account.ledger.history(convertedTo: displayCurrency, using: rates).map { point in
+            Sample(id: point.day.rawValue, date: point.day.date(), amount: point.amount.plotted)
         }
     }
 

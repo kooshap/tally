@@ -43,6 +43,20 @@ struct AccountLedger: Sendable {
         if let archivedOn, archivedOn <= day { return false }
         return entries.first.map { $0.day <= day } ?? false
     }
+
+    /// Mode 3's line: each balance on its own day, in the account's currency,
+    /// or converted to `currency` at that day's rate. A day with no rate is left
+    /// out rather than estimated, as on the net worth chart.
+    func history(
+        convertedTo currency: String? = nil,
+        using rates: RateTable
+    ) -> [(day: CalendarDay, amount: Decimal)] {
+        guard let currency, currency != currencyCode else { return entries }
+        return entries.compactMap { entry in
+            rates.convert(entry.amount, from: currencyCode, to: currency, on: entry.day)
+                .map { (day: entry.day, amount: $0) }
+        }
+    }
 }
 
 /// Net worth on one day, in the base currency.

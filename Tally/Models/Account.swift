@@ -55,6 +55,11 @@ extension Account {
         entries.sorted { $0.dayNumber < $1.dayNumber }
     }
 
+    /// Newest-first, the order the account screen lists them in.
+    var entriesNewestFirst: [BalanceEntry] {
+        sortedEntries.reversed()
+    }
+
     var latestEntry: BalanceEntry? {
         entries.max { $0.dayNumber < $1.dayNumber }
     }

@@ -22,6 +22,13 @@ enum AccountType: String, Codable, CaseIterable, Identifiable, Sendable {
     /// are entered as positive figures.
     var allowsNegativeBalance: Bool { self == .bank }
 
+    /// Whether `amount` can be recorded as this type's balance. Every place a
+    /// balance is typed checks this: a negative debt would be subtracted as a
+    /// negative, and so add to net worth what it should take away.
+    func accepts(_ amount: Decimal) -> Bool {
+        amount >= 0 || allowsNegativeBalance
+    }
+
     var localizedName: String {
         switch self {
         case .bank: return String(localized: "Bank account")

@@ -222,6 +222,57 @@ final class NetWorthCalculatorTests: XCTestCase {
         XCTAssertNil(NetWorthCalculator.headline([]))
     }
 
+    // MARK: - One account's line
+
+    func testAnAccountsLineIsItsOwnBalancesInItsOwnCurrency() {
+        let ledger = AccountLedger(type: .bank, currencyCode: "USD", entries: [(feb, 200), (jan, 100)])
+
+        let line = ledger.history(using: .empty)
+
+        XCTAssertEqual(line.map(\.day), [jan, feb])
+        XCTAssertEqual(line.map(\.amount), [100, 200])
+    }
+
+    func testAnAccountsLineConvertsAtEachDaysOwnRate() {
+        let rates = RateTable(quotes: [
+            FXQuote(day: jan, currencyCode: "USD", unitsPerEUR: 2),
+            FXQuote(day: feb, currencyCode: "USD", unitsPerEUR: 4),
+        ])
+        let ledger = AccountLedger(type: .bank, currencyCode: "USD", entries: [(jan, 1_000), (feb, 1_000)])
+
+        let line = ledger.history(convertedTo: "EUR", using: rates)
+
+        XCTAssertEqual(line.map(\.amount), [500, 250], "same dollars, a stronger euro")
+    }
+
+    func testConvertingAnAccountToItsOwnCurrencyNeedsNoRates() {
+        let ledger = AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 1_000)])
+
+        XCTAssertEqual(ledger.history(convertedTo: "EUR", using: .empty).map(\.amount), [1_000])
+    }
+
+    /// As on the net worth chart: a day with no rate is left out, never
+    /// filled from another day's rate.
+    func testADayWithNoRateIsLeftOffTheConvertedLine() {
+        let rates = RateTable(quotes: [FXQuote(day: feb, currencyCode: "USD", unitsPerEUR: 2)])
+        let ledger = AccountLedger(type: .bank, currencyCode: "USD", entries: [(jan, 1_000), (feb, 1_000)])
+
+        let line = ledger.history(convertedTo: "EUR", using: rates)
+
+        XCTAssertEqual(line.map(\.day), [feb])
+    }
+
+    // MARK: - Sign
+
+    func testOnlyABankAccountAcceptsANegativeBalance() {
+        XCTAssertTrue(AccountType.bank.accepts(-1))
+        for type in [AccountType.broker, .realEstate, .debt] {
+            XCTAssertFalse(type.accepts(-1), "\(type)")
+            XCTAssertTrue(type.accepts(0), "\(type)")
+            XCTAssertTrue(type.accepts(1), "\(type)")
+        }
+    }
+
     // MARK: - Precision
 
     func testMoneyDoesNotDriftTheWayBinaryFloatingPointWould() {

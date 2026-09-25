@@ -36,8 +36,7 @@ struct FirstLaunchView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Start") {
-                        settings.baseCurrency = selection
-                        settings.hasCompletedSetup = true
+                        settings.completeSetup(baseCurrency: selection)
                     }
                 }
             }

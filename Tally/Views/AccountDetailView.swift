@@ -11,10 +11,6 @@ struct AccountDetailView: View {
     @State private var isAddingEntry = false
     @State private var isConfirmingDelete = false
 
-    private var entriesNewestFirst: [BalanceEntry] {
-        account.sortedEntries.reversed()
-    }
-
     var body: some View {
         List {
             Section {
@@ -43,7 +39,7 @@ struct AccountDetailView: View {
                 Button("Add a balance") { isAddingEntry = true }
                     .accessibilityIdentifier("detail.addEntryButton")
 
-                ForEach(entriesNewestFirst) { entry in
+                ForEach(account.entriesNewestFirst) { entry in
                     Button {
                         entryBeingEdited = entry
                     } label: {
@@ -57,7 +53,9 @@ struct AccountDetailView: View {
                         }
                     }
                 }
-                .onDelete(perform: deleteEntries)
+                .onDelete { offsets in
+                    BalanceStore.deleteEntries(at: offsets, newestFirstOf: account, in: modelContext)
+                }
             }
 
             Section {
@@ -108,13 +106,6 @@ struct AccountDetailView: View {
             Text(
                 "This rewrites your net worth history as though the account never existed. Archiving instead keeps the past intact."
             )
-        }
-    }
-
-    private func deleteEntries(_ offsets: IndexSet) {
-        let list = entriesNewestFirst
-        for index in offsets {
-            BalanceStore.delete(list[index], in: modelContext)
         }
     }
 }

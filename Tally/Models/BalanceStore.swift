@@ -43,6 +43,15 @@ enum BalanceStore {
         context.delete(entry)
     }
 
+    /// Deletes the entries at `offsets` in `account.entriesNewestFirst`, which
+    /// is the list the account screen shows and swipes delete from.
+    static func deleteEntries(at offsets: IndexSet, newestFirstOf account: Account, in context: ModelContext) {
+        let listed = account.entriesNewestFirst
+        for index in offsets where listed.indices.contains(index) {
+            delete(listed[index], in: context)
+        }
+    }
+
     /// §6: archiving writes a zero balance on the archive date, so the chart
     /// shows the account falling out of the total rather than the total
     /// silently stepping down with no point to explain it.

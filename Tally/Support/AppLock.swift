@@ -1,5 +1,15 @@
 import Foundation
 import LocalAuthentication
+import SwiftUI
+
+/// The parts of `LAContext` the lock uses, so tests can stand in for the device.
+protocol DeviceOwnerAuthenticating: AnyObject {
+    var localizedFallbackTitle: String? { get set }
+    func canEvaluatePolicy(_ policy: LAPolicy, error: NSErrorPointer) -> Bool
+    func evaluatePolicy(_ policy: LAPolicy, localizedReason: String) async throws -> Bool
+}
+
+extension LAContext: DeviceOwnerAuthenticating {}
 
 /// Optional Face ID / passcode gate, off by default.
 ///
@@ -11,6 +21,13 @@ import LocalAuthentication
 final class AppLock {
     private(set) var isUnlocked = false
     private(set) var lastFailure: String?
+
+    /// A fresh context per attempt, as LocalAuthentication expects.
+    private let makeContext: () -> any DeviceOwnerAuthenticating
+
+    init(makeContext: @escaping () -> any DeviceOwnerAuthenticating = { LAContext() }) {
+        self.makeContext = makeContext
+    }
 
     /// True when the app should be hidden in the switcher and behind a gate.
     func isLocked(enabled: Bool) -> Bool {
@@ -25,8 +42,22 @@ final class AppLock {
         isUnlocked = false
     }
 
+    /// Re-locks on leaving the app, not on a passing interruption like a
+    /// notification banner, which only makes the scene inactive.
+    func sceneDidChange(to phase: ScenePhase, enabled: Bool) {
+        if phase == .background && enabled {
+            lock()
+        }
+    }
+
+    /// Whether to cover the balances, which is whenever the lock is on and the
+    /// app isn't in front — including in the app switcher.
+    static func hidesContent(enabled: Bool, phase: ScenePhase) -> Bool {
+        enabled && phase != .active
+    }
+
     func authenticate(reason: String) async {
-        let context = LAContext()
+        let context = makeContext()
         context.localizedFallbackTitle = ""
 
         var error: NSError?

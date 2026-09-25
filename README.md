@@ -67,10 +67,11 @@ Tally/
     BalanceStore            The one-entry-per-day and archive rules
     RateStore               Merge-by-day-and-currency
     AppSettings             Base currency, Face ID, last fetch
+  Forms/                    What the account and balance editors save, and when
   Rates/                    ECBEndpoint, ECBRatesParser, RatesService, coordinator
   Views/                    Dashboard + 3 chart modes, accounts, update-all, settings
   Resources/                String Catalog (en/de), PrivacyInfo.xcprivacy
-TallyTests/                 Domain, store, parser, migration, and
+TallyTests/                 Domain, store, form, parser, migration, and
                             network-host tests
 TallyUITests/               The "update all" flow
 ```
@@ -121,6 +122,10 @@ app before its models were versioned, and checks that every account, balance,
 and rate survives. It also fails if `TallySchemaV1` is edited in place: a model
 change belongs in a new schema version with a migration stage, and the fixture
 must still open under it.
+
+The rules the editors apply — validation, which amounts may be negative, which
+entry a swipe deletes, when the app re-locks — live in `Forms/`, `BalanceStore`,
+and `AppLock`, where they are unit tested; what's left in the views is layout.
 
 ## Code style
 

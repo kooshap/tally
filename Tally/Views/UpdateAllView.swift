@@ -82,10 +82,15 @@ struct UpdateAllView: View {
                     .accessibilityIdentifier("updateAll.amountField")
                 } header: {
                     Text("Account \(index + 1) of \(accounts.count)")
+                } footer: {
+                    if isNegativeAndDisallowed(account) {
+                        Text("Only a bank account can hold a negative balance. Debts are entered as positive amounts.")
+                    }
                 }
 
                 Section {
                     Button("Next") { advance() }
+                        .disabled(isNegativeAndDisallowed(account))
                         .accessibilityIdentifier("updateAll.nextButton")
                     Button("Skip this account") {
                         skipped.insert(account.id)
@@ -162,8 +167,13 @@ struct UpdateAllView: View {
         MoneyFormatting.parse(drafts[account.id] ?? "", code: account.currencyCode)
     }
 
+    private func isNegativeAndDisallowed(_ account: Account) -> Bool {
+        amount(for: account).map { !account.type.accepts($0) } ?? false
+    }
+
     private func willSave(_ account: Account) -> Bool {
-        !skipped.contains(account.id) && amount(for: account) != nil
+        guard !skipped.contains(account.id), let amount = amount(for: account) else { return false }
+        return account.type.accepts(amount)
     }
 
     private func draftText(for account: Account) -> String {

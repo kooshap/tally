@@ -20,7 +20,7 @@ struct AppRootView: View {
         }
         // Hide balances in the app switcher whenever the lock is on.
         .overlay {
-            if settings.faceIDEnabled && scenePhase != .active {
+            if AppLock.hidesContent(enabled: settings.faceIDEnabled, phase: scenePhase) {
                 PrivacyShade()
             }
         }
@@ -29,11 +29,7 @@ struct AppRootView: View {
             await rates.refreshIfNeeded(context: modelContext, settings: settings)
         }
         .onChange(of: scenePhase) { _, phase in
-            // Re-lock on leaving, not on a passing interruption like a
-            // notification banner, which only makes the scene inactive.
-            if phase == .background && settings.faceIDEnabled {
-                lock.lock()
-            }
+            lock.sceneDidChange(to: phase, enabled: settings.faceIDEnabled)
         }
     }
 }

@@ -7,58 +7,41 @@ struct BalanceEntryEditor: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    let account: Account
-    let entry: BalanceEntry?
+    @State private var form: BalanceEntryForm
 
-    @State private var amountText = ""
-    @State private var date = Date.now
-
-    private var parsedAmount: Decimal? {
-        MoneyFormatting.parse(amountText, code: account.currencyCode)
-    }
-
-    private var day: CalendarDay { CalendarDay(date: date) }
-
-    private var wouldOverwrite: Bool {
-        guard entry == nil else { return false }
-        return account.entries.contains { $0.dayNumber == day.rawValue }
-    }
-
-    private var isNegativeAndDisallowed: Bool {
-        guard let parsedAmount else { return false }
-        return parsedAmount < 0 && !account.type.allowsNegativeBalance
-    }
-
-    private var canSave: Bool {
-        parsedAmount != nil && !isNegativeAndDisallowed
+    init(account: Account, entry: BalanceEntry?) {
+        _form = State(initialValue: BalanceEntryForm(account: account, entry: entry))
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Amount in \(account.currencyCode)", text: $amountText)
+                    TextField("Amount in \(form.account.currencyCode)", text: $form.amountText)
                         .keyboardType(.numbersAndPunctuation)
                         .accessibilityIdentifier("entry.amountField")
 
                     DatePicker(
                         "Date",
-                        selection: $date,
+                        selection: $form.date,
                         in: BalanceStore.allowedDates(),
                         displayedComponents: .date
                     )
-                    .disabled(entry != nil)
+                    .disabled(form.entry != nil)
                 } footer: {
-                    if entry != nil {
+                    switch form.notice {
+                    case .dateIsFixed:
                         Text("An entry's date can't be changed. Delete it and add another to move it.")
-                    } else if wouldOverwrite {
+                    case .replacesThatDaysBalance:
                         Text("This replaces the balance already recorded for that day.")
-                    } else if isNegativeAndDisallowed {
+                    case .negativeNotAllowed:
                         Text("Only a bank account can hold a negative balance. Debts are entered as positive amounts.")
+                    case nil:
+                        EmptyView()
                     }
                 }
             }
-            .navigationTitle(entry == nil ? "Add balance" : "Edit balance")
+            .navigationTitle(form.entry == nil ? "Add balance" : "Edit balance")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -66,28 +49,15 @@ struct BalanceEntryEditor: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
-                        .disabled(!canSave)
+                        .disabled(!form.canSave)
                         .accessibilityIdentifier("entry.saveButton")
                 }
             }
-            .onAppear(perform: loadExisting)
         }
-    }
-
-    private func loadExisting() {
-        guard let entry else { return }
-        amountText = MoneyFormatting.editableString(entry.amount)
-        date = entry.day.date()
     }
 
     private func save() {
-        guard let parsedAmount else { return }
-        if let entry {
-            entry.amount = parsedAmount
-            entry.updatedAt = .now
-        } else {
-            BalanceStore.record(parsedAmount, on: day, for: account, in: modelContext)
-        }
+        form.save(in: modelContext)
         dismiss()
     }
 }
