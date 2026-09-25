@@ -26,7 +26,7 @@ install_zip() {
     local url=$1 sha256=$2 dir=$3
     [[ -d "$bin/$dir" ]] && return
 
-    echo "Installing $dir…" >&2
+    echo "Installing ${dir}…" >&2
     local tmp
     tmp="$(mktemp -d)"
     curl --fail --silent --show-error --location --retry 3 --output "$tmp/tool.zip" "$url"
