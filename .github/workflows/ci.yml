@@ -95,3 +95,17 @@ jobs:
           name: TestResults
           path: TestResults.xcresult
           retention-days: 7
+
+      # The tests only ever compile Debug. Archives are Release, which goes
+      # through the optimizer and whole-module compilation, so build it here
+      # to catch a Release-only break on the commit that caused it. Last, so
+      # its failure doesn't upload the result bundle.
+      - name: Build Release
+        run: |
+          xcodebuild build \
+            -scheme Tally \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
