@@ -15,22 +15,36 @@ jobs:
   lint:
     name: Format and lint
     runs-on: macos-26
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      XCODE_APP: /Applications/Xcode_26.6.app
     steps:
       - uses: actions/checkout@v7
 
-      # Homebrew updates first, so these are the same versions `brew bundle`
-      # gives a developer today, not whatever the runner image shipped with.
-      - name: Install swift-format and SwiftLint
+      # swift-format is built from source with this Xcode's compiler.
+      - name: Select Xcode
+        run: sudo xcode-select --switch "$XCODE_APP"
+
+      # The tools are pinned in BuildTools/, so a new release upstream can't
+      # fail a commit that changed nothing. Building swift-format takes a few
+      # minutes, hence the cache; changing a pin changes the key.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            BuildTools/.build
+            BuildTools/.bin
+          key: buildtools-${{ runner.os }}-${{ env.XCODE_APP }}-${{ hashFiles('BuildTools/Package.swift', 'BuildTools/Package.resolved', 'BuildTools/tool') }}
+
+      - name: Show tool versions
         run: |
-          brew install swift-format swiftlint
-          echo "swift-format $(swift-format --version), SwiftLint $(swiftlint version)"
+          echo "swift-format $(BuildTools/tool swift-format --version)"
+          echo "SwiftLint $(BuildTools/tool swiftlint version)"
 
       - name: Check formatting
-        run: swift-format lint --strict --recursive --parallel Tally TallyTests TallyUITests
+        run: BuildTools/tool swift-format lint --strict --recursive --parallel Tally TallyTests TallyUITests
 
       - name: Lint
-        run: swiftlint lint --strict --reporter github-actions-logging
+        run: BuildTools/tool swiftlint lint --strict --reporter github-actions-logging
 
   test:
     name: Unit and UI tests
@@ -41,8 +55,6 @@ jobs:
     env:
       XCODE_APP: /Applications/Xcode_26.6.app
       DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
-      HOMEBREW_NO_AUTO_UPDATE: 1
-      HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     steps:
       - uses: actions/checkout@v7
@@ -54,9 +66,7 @@ jobs:
 
       # Tally.xcodeproj is generated and gitignored; project.yml is the source.
       - name: Generate the Xcode project
-        run: |
-          brew install xcodegen
-          xcodegen generate
+        run: BuildTools/tool xcodegen generate
 
       - name: Run tests
         run: |

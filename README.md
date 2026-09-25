@@ -38,21 +38,22 @@ Requires a Mac with Xcode 16 (iOS 18 SDK) or later. The app builds in the
 Swift 6 language mode.
 
 ```sh
-brew bundle          # xcodegen, swift-format, swiftlint, lefthook
-lefthook install     # the pre-commit hook
-xcodegen generate
+brew bundle                        # lefthook
+lefthook install                   # the pre-commit hook
+BuildTools/tool xcodegen generate
 open Tally.xcodeproj
 ```
 
 `Tally.xcodeproj` is generated and gitignored — edit `project.yml` and re-run
-`xcodegen generate`. `DEVELOPMENT_TEAM` there is the team Xcode Cloud signs
-with; change it to your own to run a fork on a device.
+`BuildTools/tool xcodegen generate`. `DEVELOPMENT_TEAM` there is the team Xcode
+Cloud signs with; change it to your own to run a fork on a device.
 
 ## Layout
 
 ```
 project.yml                 XcodeGen spec (iOS 18, iPhone, portrait)
 SPEC.md                     The build spec this implements
+BuildTools/                 Pinned XcodeGen, swift-format, and SwiftLint
 Tally/
   Domain/                   Pure value types — no SwiftData, no SwiftUI
     CalendarDay             A day with no time zone (see below)
@@ -129,9 +130,15 @@ would fight the formatter). The pre-commit hook formats and lints the Swift
 files being committed. To run them over everything:
 
 ```sh
-swift-format format --in-place --recursive Tally TallyTests TallyUITests
-swiftlint lint --strict
+BuildTools/tool swift-format format --in-place --recursive Tally TallyTests TallyUITests
+BuildTools/tool swiftlint lint --strict
 ```
+
+`BuildTools/tool` runs XcodeGen, swift-format, and SwiftLint at the versions
+pinned in `BuildTools/`, installing each on first use; swift-format is built
+from source, which takes a couple of minutes the first time. The hook, CI, and
+Xcode Cloud all go through it, so a new release upstream can't change what
+counts as clean. To upgrade a tool, see the top of `BuildTools/tool`.
 
 On every push, CI runs both alongside the full test suite, which it builds
 with warnings treated as errors.

@@ -1,6 +1,4 @@
-# Developer tools: `brew bundle` installs them. CI installs swift-format and
-# SwiftLint the same way, so the hook and the build agree on what's clean.
-brew "xcodegen"
-brew "swift-format"
-brew "swiftlint"
+# `brew bundle` installs the pre-commit hook runner. swift-format, SwiftLint,
+# and XcodeGen are not here: BuildTools/tool runs each at a pinned version, so
+# the hook, CI, and every Mac agree on what's clean.
 brew "lefthook"

@@ -1,11 +1,12 @@
 # Fast checks on the Swift files being committed; `lefthook install` turns
-# them on. The test suite is too slow for a hook and runs in CI instead.
+# them on. The test suite is too slow for a hook and runs in CI instead. Both
+# tools run at the versions pinned in BuildTools/, the same ones CI uses.
 pre-commit:
   commands:
     format:
       glob: "*.swift"
-      run: swift-format format --in-place {staged_files}
+      run: BuildTools/tool swift-format format --in-place {staged_files}
       stage_fixed: true
     lint:
       glob: "*.swift"
-      run: swiftlint lint --strict --quiet {staged_files}
+      run: BuildTools/tool swiftlint lint --strict --quiet {staged_files}
