@@ -27,12 +27,14 @@ final class UpdateAllFlowUITests: XCTestCase {
         XCTAssertTrue(amountField.waitForExistence(timeout: 5))
         XCTAssertEqual(amountField.value as? String, "4000")
 
-        amountField.tap()
-        amountField.press(forDuration: 1.2)
-        if app.menuItems["Select All"].waitForExistence(timeout: 2) {
-            app.menuItems["Select All"].tap()
-        }
+        // Clear by deleting rather than through the edit menu, which doesn't
+        // reliably appear on a long press. Tapping the trailing edge puts the
+        // cursor after the pre-filled text.
+        amountField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        let prefilled = amountField.value as? String ?? ""
+        amountField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: prefilled.count))
         amountField.typeText("4500")
+        XCTAssertEqual(amountField.value as? String, "4500")
 
         app.buttons["updateAll.nextButton"].tap()
 
