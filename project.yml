@@ -24,6 +24,9 @@ targets:
       path: Support/Info.plist
       properties:
         CFBundleDisplayName: Tally
+        # XcodeGen otherwise writes a literal 1.0 (1), ignoring the settings above.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations: [en, de]
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
