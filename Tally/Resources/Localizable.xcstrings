@@ -695,6 +695,72 @@
         }
       }
     },
+    "Tally can't open your data": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tally kann deine Daten nicht öffnen"
+          }
+        }
+      }
+    },
+    "Your accounts and balances have not been deleted. They are still on this iPhone, and nothing on this screen will change or remove them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Konten und Kontostände wurden nicht gelöscht. Sie sind weiterhin auf diesem iPhone, und nichts auf diesem Bildschirm ändert oder entfernt sie."
+          }
+        }
+      }
+    },
+    "Please don't delete the app to fix this — that would delete your data with it. Updating Tally from the App Store, or restarting your iPhone, may help.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitte lösche die App nicht, um das zu beheben — damit würdest du auch deine Daten löschen. Ein Update von Tally aus dem App Store oder ein Neustart deines iPhone kann helfen."
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Technical details": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Technische Details"
+          }
+        }
+      }
+    },
+    "Tally doesn't send error reports. These details stay on your iPhone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tally sendet keine Fehlerberichte. Diese Angaben bleiben auf deinem iPhone."
+          }
+        }
+      }
+    },
     "Net worth": {
       "extractionState": "manual",
       "localizations": {

@@ -7,6 +7,9 @@ import SwiftData
 /// and the App Store build never can.
 enum UITestSupport {
     static let resetArgument = "-uiTestingReset"
+    /// Launches against a store that can't be opened, to reach the recovery
+    /// screen.
+    static let unopenableStoreArgument = "-uiTestingUnopenableStore"
 
     static var isRunningUITests: Bool {
         ProcessInfo.processInfo.arguments.contains(resetArgument)
@@ -38,10 +41,27 @@ enum UITestSupport {
     }
 
     static func makeContainer() throws -> ModelContainer {
-        let inMemory = isRunningUITests || isHostingUnitTests
-        let container = try TallyStore.makeContainer(inMemory: inMemory)
+        if isRunningUITests && ProcessInfo.processInfo.arguments.contains(unopenableStoreArgument) {
+            return try openUnopenableStore()
+        }
+        guard isRunningUITests || isHostingUnitTests else {
+            return try TallyStore.open(TallyStore.onDevice, backingUpTo: TallyStore.backupsOnDevice)
+        }
+        let container = try TallyStore.makeContainer(inMemory: true)
         seed(container)
         return container
+    }
+
+    /// A few bytes that aren't a database, in the temporary directory, well
+    /// away from the real store.
+    private static func openUnopenableStore() throws -> ModelContainer {
+        let folder = FileManager.default.temporaryDirectory.appending(
+            path: "uitest-unopenable", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = folder.appending(path: "default.store")
+        try Data("not a database".utf8).write(to: url)
+        let backups = StoreBackups(directory: folder.appending(path: "Store Backups", directoryHint: .isDirectory))
+        return try TallyStore.open(ModelConfiguration(url: url), backingUpTo: backups)
     }
 
     /// Two accounts with a known last balance, which is what the update flow

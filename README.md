@@ -18,6 +18,11 @@ Built to [SPEC.md](SPEC.md).
   ECB is the only host ever contacted.
 - **No CloudKit.** The SwiftData store sits in Application Support and rides
   along in the standard encrypted iPhone backup. That is the backup strategy.
+- **The store is never thrown away.** Before an update migrates it, Tally
+  copies the store and its `-wal`/`-shm` files to `Store Backups/` in
+  Application Support, keeping the newest three. If the store won't open,
+  the app says the data is still there and offers "Try again" instead of
+  crashing; nothing on that screen deletes, replaces, or recreates the file.
 - **Fully usable offline**, on the last rates it cached, which it dates for you.
 - App Store privacy label: **Data Not Collected**, with a `PrivacyInfo.xcprivacy`
   declaring the one required-reason API in use (`UserDefaults`, CA92.1).
@@ -64,16 +69,19 @@ Tally/
   Models/                   SwiftData: Account, BalanceEntry, FXRate
     TallySchema             Versioned schema and migration plan — read it
                             before changing a model
+    StoreBackups            The copy taken before a migration, and pruning
+    StoreLoader             Opening at launch, and the failure it shows
     BalanceStore            The one-entry-per-day and archive rules
     RateStore               Merge-by-day-and-currency
     AppSettings             Base currency, Face ID, last fetch
   Forms/                    What the account and balance editors save, and when
   Rates/                    ECBEndpoint, ECBRatesParser, RatesService, coordinator
-  Views/                    Dashboard + 3 chart modes, accounts, update-all, settings
+  Views/                    Dashboard + 3 chart modes, accounts, update-all, settings,
+                            and the screen shown when the store won't open
   Resources/                String Catalog (en/de), PrivacyInfo.xcprivacy
 TallyTests/                 Domain, store, form, parser, migration, and
                             network-host tests
-TallyUITests/               The "update all" flow
+TallyUITests/               The "update all" flow, and the recovery screen
 ```
 
 ## Two decisions worth knowing
@@ -122,6 +130,13 @@ app before its models were versioned, and checks that every account, balance,
 and rate survives. It also fails if `TallySchemaV1` is edited in place: a model
 change belongs in a new schema version with a migration stage, and the fixture
 must still open under it.
+
+`StoreBackupTests` checks a copy of the store and its sidecars is taken
+only when opening it would migrate it, that the same store is never copied
+twice, and that only the newest three are kept. `StoreLoaderTests` opens a few
+random bytes as a store: the app reaches the recovery state, "Try again" keeps
+failing safely, and the file is byte-for-byte what it was. A UI test launches
+the real app against such a store.
 
 The rules the editors apply — validation, which amounts may be negative, which
 entry a swipe deletes, when the app re-locks — live in `Forms/`, `BalanceStore`,

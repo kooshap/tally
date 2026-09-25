@@ -120,8 +120,8 @@ final class SchemaMigrationTests: XCTestCase {
 
     // MARK: - The plan
 
-    /// Catches a new schema version added to the plan without the app being
-    /// moved onto it, or the other way round.
+    /// Catches a new schema version added to the plan without the app, or
+    /// `TallyStore`, being moved onto it, or the other way round.
     func testTheAppsModelsAreTheLatestSchemaVersion() throws {
         let latest = try XCTUnwrap(TallyMigrationPlan.schemas.last)
         let appModels: [any PersistentModel.Type] = [Account.self, BalanceEntry.self, FXRate.self]
@@ -130,6 +130,9 @@ final class SchemaMigrationTests: XCTestCase {
             Set(latest.models.map(ObjectIdentifier.init)),
             Set(appModels.map(ObjectIdentifier.init))
         )
+        XCTAssertEqual(
+            TallyStore.currentVersion.versionIdentifier, latest.versionIdentifier,
+            "TallyStore opens, and backs up against, the latest version")
     }
 
     func testSchemaVersionsOnlyEverIncrease() {
