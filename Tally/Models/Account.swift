@@ -69,7 +69,8 @@ extension Account {
         latestEntry?.amount ?? 0
     }
 
-    /// The pure-value form the calculator works on.
+    /// The pure-value form the calculator works on. `AccountLedger` sorts the
+    /// entries itself, so they aren't sorted here first.
     var ledger: AccountLedger {
         AccountLedger(
             id: id,
@@ -77,7 +78,7 @@ extension Account {
             type: type,
             currencyCode: currencyCode,
             archivedOn: archivedOn,
-            entries: sortedEntries.map { (day: $0.day, amount: $0.amount) }
+            entries: entries.map { (day: $0.day, amount: $0.amount) }
         )
     }
 }

@@ -31,11 +31,15 @@ struct AccountLedger: Sendable {
     /// (carry-forward); zero before the first entry, and zero once archived.
     func value(on day: CalendarDay) -> Decimal {
         if let archivedOn, archivedOn <= day { return 0 }
-        var carried: Decimal = 0
-        for entry in entries {
-            if entry.day <= day { carried = entry.amount } else { break }
+        // A bisection over the sorted entries rather than a scan: the series
+        // asks this of every account for every day that has a point.
+        var low = 0
+        var high = entries.count
+        while low < high {
+            let mid = (low + high) / 2
+            if entries[mid].day <= day { low = mid + 1 } else { high = mid }
         }
-        return carried
+        return low == 0 ? 0 : entries[low - 1].amount
     }
 
     /// Mode 3's line: each balance on its own day, in the account's currency,

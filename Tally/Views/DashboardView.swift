@@ -17,25 +17,46 @@ enum ChartMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// The series is computed here and the chart selection lives in
+/// `DashboardContent`, so a drag across the chart, which changes `selectedDay`
+/// on every frame, re-runs only the child. This body reads just the accounts
+/// and their entries, the rate table, and the base currency, and Observation
+/// re-runs it when any of them changes, so a new balance still shows up. A
+/// series cached in `@State` would need a key covering every entry's day and
+/// amount, and would go stale the day the calculator reads something the key
+/// leaves out.
 struct DashboardView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(RatesCoordinator.self) private var rates
-    @Environment(\.modelContext) private var modelContext
 
     // Archived accounts stay in the query: their history remains on the graph.
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
+    var body: some View {
+        NavigationStack {
+            DashboardContent(
+                series: NetWorthCalculator.series(
+                    ledgers: accounts.map(\.ledger),
+                    rates: rates.table,
+                    baseCurrency: settings.baseCurrency
+                ),
+                accounts: accounts
+            )
+        }
+    }
+}
+
+private struct DashboardContent: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(RatesCoordinator.self) private var rates
+    @Environment(\.modelContext) private var modelContext
+
+    let series: [NetWorthPoint]
+    let accounts: [Account]
+
     @State private var mode: ChartMode = .total
     @State private var selectedDay: CalendarDay?
     @State private var drilldownAccountID: UUID?
-
-    private var series: [NetWorthPoint] {
-        NetWorthCalculator.series(
-            ledgers: accounts.map(\.ledger),
-            rates: rates.table,
-            baseCurrency: settings.baseCurrency
-        )
-    }
 
     private var plottable: [NetWorthPoint] {
         series.filter(\.hasCompleteRates)
@@ -46,36 +67,34 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    headline
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                headline
 
-                    if !pointsMissingRates.isEmpty {
-                        MissingRatesBanner(points: pointsMissingRates) {
-                            Task {
-                                await rates.backfillHistory(context: modelContext, settings: settings)
-                            }
+                if !pointsMissingRates.isEmpty {
+                    MissingRatesBanner(points: pointsMissingRates) {
+                        Task {
+                            await rates.backfillHistory(context: modelContext, settings: settings)
                         }
-                    }
-
-                    if series.isEmpty {
-                        DashboardEmptyState()
-                    } else {
-                        Picker("Chart", selection: $mode) {
-                            ForEach(ChartMode.allCases) { mode in
-                                Text(mode.label).tag(mode)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-
-                        chart
                     }
                 }
-                .padding()
+
+                if series.isEmpty {
+                    DashboardEmptyState()
+                } else {
+                    Picker("Chart", selection: $mode) {
+                        ForEach(ChartMode.allCases) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    chart
+                }
             }
-            .navigationTitle("Net worth")
+            .padding()
         }
+        .navigationTitle("Net worth")
     }
 
     @ViewBuilder
