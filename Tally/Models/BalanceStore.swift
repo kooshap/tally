@@ -82,9 +82,15 @@ enum BalanceStore {
         context.delete(account)
     }
 
-    /// Keeps `sortOrder` dense and in list order after a drag.
-    static func reorder(_ accounts: [Account]) {
-        for (index, account) in accounts.enumerated() {
+    /// Keeps `sortOrder` dense and in list order after a drag in the active
+    /// list: `active` is numbered in the order given, then the rest of
+    /// `accounts` (the archived ones, which that list doesn't show) after it.
+    /// Renumbering only the active ones would leave an archived account's
+    /// `sortOrder` shared with an active one, and unarchiving it would put it
+    /// in no particular place.
+    static func reorder(_ active: [Account], among accounts: [Account]) {
+        let rest = accounts.filter { account in !active.contains { $0 === account } }
+        for (index, account) in (active + rest).enumerated() {
             account.sortOrder = index
         }
     }

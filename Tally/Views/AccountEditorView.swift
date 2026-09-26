@@ -9,6 +9,7 @@ struct AccountEditorView: View {
     @Query(sort: \Account.sortOrder) private var allAccounts: [Account]
 
     @State private var form: AccountForm
+    @State private var saveFailed = false
 
     /// `nil` creates; otherwise edits in place.
     init(account: Account?) {
@@ -84,11 +85,22 @@ struct AccountEditorView: View {
                 }
             }
             .onAppear { form.useCurrencyIfUnset(settings.baseCurrency) }
+            .saveFailedAlert(isPresented: $saveFailed)
         }
     }
 
     private func save() {
-        form.save(after: allAccounts, in: modelContext)
-        dismiss()
+        let saved = form.save(after: allAccounts, in: modelContext)
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            // The new account is still in the context, waiting for the next
+            // save. Editing it from here means Save again can't add a second.
+            if let saved, !form.isEditing {
+                form = AccountForm(editing: saved)
+            }
+            saveFailed = true
+        }
     }
 }

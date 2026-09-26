@@ -23,6 +23,9 @@ Built to [SPEC.md](SPEC.md).
   Application Support, keeping the newest three. If the store won't open,
   the app says the data is still there and offers "Try again" instead of
   crashing; nothing on that screen deletes, replaces, or recreates the file.
+- **Every change is saved as it's made**, rather than whenever SwiftData
+  next autosaves. If the write fails, the app says so and keeps the change
+  to write with the next save.
 - **Fully usable offline**, on the last rates it cached, which it dates for you.
 - App Store privacy label: **Data Not Collected**, with a `PrivacyInfo.xcprivacy`
   declaring the one required-reason API in use (`UserDefaults`, CA92.1).
@@ -30,8 +33,7 @@ Built to [SPEC.md](SPEC.md).
 ## Status
 
 Scaffolded on Linux, then first built and tested on a Mac on 2026-09-23
-(Xcode 27, iOS 26.5 simulator): the full suite passes, 103 tests including
-the UI test.
+(Xcode 27, iOS 26.5 simulator), where the full suite passes.
 
 The ECB endpoints were fetched live on 2026-09-22 (daily = 29 currencies,
 90-day = 64 business days, full history = 7,098 days back to 1999-01-04), and

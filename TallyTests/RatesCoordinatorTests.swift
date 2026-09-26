@@ -83,6 +83,27 @@ final class RatesCoordinatorTests: XCTestCase {
         XCTAssertTrue(requestedURLs.isEmpty)
     }
 
+    func testComingBackToTheAppAfterADayFetchesTheNinetyDayFile() async throws {
+        try RateStore.merge([FXQuote(day: september22, currencyCode: "USD", unitsPerEUR: 1)], into: context)
+        try context.save()
+        settings.lastRatesFetch = Date.now.addingTimeInterval(-2 * 24 * 60 * 60)
+        let coordinator = makeCoordinator(stub: try fixture("eurofxref-daily"))
+
+        await coordinator.sceneDidChange(to: .active, context: context, settings: settings)
+
+        XCTAssertEqual(requestedURLs, [ECBEndpoint.ninetyDays.url])
+    }
+
+    func testLeavingTheAppFetchesNothing() async throws {
+        settings.lastRatesFetch = Date.now.addingTimeInterval(-2 * 24 * 60 * 60)
+        let coordinator = makeCoordinator(stub: try fixture("eurofxref-daily"))
+
+        await coordinator.sceneDidChange(to: .inactive, context: context, settings: settings)
+        await coordinator.sceneDidChange(to: .background, context: context, settings: settings)
+
+        XCTAssertTrue(requestedURLs.isEmpty)
+    }
+
     func testBackfillAlwaysFetchesTheFullHistory() async throws {
         settings.lastRatesFetch = .now
         let coordinator = makeCoordinator(stub: try fixture("eurofxref-hist-sample"))
@@ -143,6 +164,17 @@ final class RatesCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(coordinator.table.unitsPerEUR("CHF", on: september22), Decimal(string: "0.9393"))
         XCTAssertTrue(requestedURLs.isEmpty, "reading the cache never touches the network")
+    }
+
+    /// At launch the cache read and a refresh can overlap. The refresh's table
+    /// is the newer one and must be the one kept.
+    func testReadingTheCacheNeverReplacesRatesARefreshLoaded() async throws {
+        let coordinator = makeCoordinator(stub: try fixture("eurofxref-hist-sample"))
+        await coordinator.refresh(.fullHistory, context: context, settings: settings)
+
+        await coordinator.loadCached(from: ModelContext(try TallyStore.makeContainer(inMemory: true)))
+
+        XCTAssertEqual(coordinator.table.latestDay, september22)
     }
 
     func testRefetchingTheSameFileDoesNotDuplicateRates() async throws {

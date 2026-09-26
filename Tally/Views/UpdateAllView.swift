@@ -16,6 +16,7 @@ struct UpdateAllView: View {
     @State private var drafts: [UUID: String] = [:]
     @State private var skipped: Set<UUID> = []
     @State private var isReviewing = false
+    @State private var saveFailed = false
 
     private var day: CalendarDay { CalendarDay(date: date) }
     private var current: Account? {
@@ -45,6 +46,7 @@ struct UpdateAllView: View {
                 }
             }
             .onAppear(perform: prefill)
+            .saveFailedAlert(isPresented: $saveFailed)
         }
     }
 
@@ -188,6 +190,11 @@ struct UpdateAllView: View {
             guard let amount = amount(for: account) else { continue }
             BalanceStore.record(amount, on: day, for: account, in: modelContext)
         }
-        dismiss()
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            saveFailed = true
+        }
     }
 }

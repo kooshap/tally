@@ -30,6 +30,7 @@ struct AppRootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             lock.sceneDidChange(to: phase, enabled: settings.faceIDEnabled)
+            Task { await rates.sceneDidChange(to: phase, context: modelContext, settings: settings) }
         }
     }
 }

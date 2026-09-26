@@ -8,6 +8,7 @@ struct BalanceEntryEditor: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var form: BalanceEntryForm
+    @State private var saveFailed = false
 
     init(account: Account, entry: BalanceEntry?) {
         _form = State(initialValue: BalanceEntryForm(account: account, entry: entry))
@@ -53,11 +54,17 @@ struct BalanceEntryEditor: View {
                         .accessibilityIdentifier("entry.saveButton")
                 }
             }
+            .saveFailedAlert(isPresented: $saveFailed)
         }
     }
 
     private func save() {
         form.save(in: modelContext)
-        dismiss()
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            saveFailed = true
+        }
     }
 }

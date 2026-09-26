@@ -266,6 +266,28 @@
         }
       }
     },
+    "Couldn't save": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht gespeichert"
+          }
+        }
+      }
+    },
+    "Your change hasn't been stored yet. Tally will try again the next time it saves. If your iPhone is low on storage, free some up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Änderung ist noch nicht gespeichert. Tally versucht es beim nächsten Speichern erneut. Wenn auf deinem iPhone der Speicher knapp ist, gib etwas Platz frei."
+          }
+        }
+      }
+    },
     "This rewrites your net worth history as though the account never existed. Archiving instead keeps the past intact.": {
       "extractionState": "manual",
       "localizations": {

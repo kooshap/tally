@@ -10,6 +10,7 @@ struct AccountDetailView: View {
     @State private var entryBeingEdited: BalanceEntry?
     @State private var isAddingEntry = false
     @State private var isConfirmingDelete = false
+    @State private var saveFailed = false
 
     var body: some View {
         List {
@@ -55,6 +56,7 @@ struct AccountDetailView: View {
                 }
                 .onDelete { offsets in
                     BalanceStore.deleteEntries(at: offsets, newestFirstOf: account, in: modelContext)
+                    saveNow()
                 }
             }
 
@@ -62,10 +64,12 @@ struct AccountDetailView: View {
                 if account.isArchived {
                     Button("Unarchive") {
                         BalanceStore.unarchive(account, in: modelContext)
+                        saveNow()
                     }
                 } else {
                     Button("Archive") {
                         BalanceStore.archive(account, in: modelContext)
+                        saveNow()
                     }
                 }
 
@@ -99,13 +103,28 @@ struct AccountDetailView: View {
         ) {
             Button("Delete account and its history", role: .destructive) {
                 BalanceStore.delete(account, in: modelContext)
-                dismiss()
+                if saveNow() {
+                    dismiss()
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
                 "This rewrites your net worth history as though the account never existed. Archiving instead keeps the past intact."
             )
+        }
+        .saveFailedAlert(isPresented: $saveFailed)
+    }
+
+    /// Whether the change reached the store. If not, the alert says so.
+    @discardableResult
+    private func saveNow() -> Bool {
+        do {
+            try modelContext.save()
+            return true
+        } catch {
+            saveFailed = true
+            return false
         }
     }
 }

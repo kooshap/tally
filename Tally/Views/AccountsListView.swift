@@ -2,11 +2,13 @@ import SwiftData
 import SwiftUI
 
 struct AccountsListView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     @State private var isAddingAccount = false
     @State private var isUpdatingAll = false
     @State private var showArchived = false
+    @State private var saveFailed = false
 
     private var active: [Account] { accounts.filter { !$0.isArchived } }
     private var archived: [Account] { accounts.filter(\.isArchived) }
@@ -76,13 +78,19 @@ struct AccountsListView: View {
             .sheet(isPresented: $isUpdatingAll) {
                 UpdateAllView(accounts: active)
             }
+            .saveFailedAlert(isPresented: $saveFailed)
         }
     }
 
     private func move(_ offsets: IndexSet, to destination: Int) {
         var reordered = active
         reordered.move(fromOffsets: offsets, toOffset: destination)
-        BalanceStore.reorder(reordered)
+        BalanceStore.reorder(reordered, among: accounts)
+        do {
+            try modelContext.save()
+        } catch {
+            saveFailed = true
+        }
     }
 }
 

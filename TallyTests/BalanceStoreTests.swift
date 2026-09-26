@@ -252,11 +252,26 @@ final class BalanceStoreTests: XCTestCase {
         let second = makeAccount()
         let third = makeAccount()
 
-        BalanceStore.reorder([third, first, second])
+        BalanceStore.reorder([third, first, second], among: [first, second, third])
 
         XCTAssertEqual(third.sortOrder, 0)
         XCTAssertEqual(first.sortOrder, 1)
         XCTAssertEqual(second.sortOrder, 2)
+    }
+
+    /// The list only drags active accounts, but an archived one must still
+    /// end up with a place of its own for when it's unarchived.
+    func testReorderNumbersArchivedAccountsAfterTheActiveOnes() {
+        let first = makeAccount()
+        let archived = makeAccount()
+        let second = makeAccount()
+        BalanceStore.reorder([first, archived, second], among: [first, archived, second])
+        BalanceStore.archive(archived, on: day, in: context)
+
+        BalanceStore.reorder([second, first], among: [first, archived, second])
+        BalanceStore.unarchive(archived, in: context)
+
+        XCTAssertEqual([second, first, archived].map(\.sortOrder), [0, 1, 2])
     }
 
     // MARK: - Model
