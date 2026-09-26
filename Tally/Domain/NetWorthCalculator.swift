@@ -78,7 +78,7 @@ enum NetWorthCalculator {
     ) -> [NetWorthPoint] {
         let days = Set(
             ledgers.flatMap { ledger in
-                ledger.entries.map { $0.day } + (ledger.archivedOn.map { [$0] } ?? [])
+                ledger.entries.map(\.day) + (ledger.archivedOn.map { [$0] } ?? [])
             }
         ).sorted()
 

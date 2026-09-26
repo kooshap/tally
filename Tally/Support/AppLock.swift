@@ -45,7 +45,7 @@ final class AppLock {
     /// Re-locks on leaving the app, not on a passing interruption like a
     /// notification banner, which only makes the scene inactive.
     func sceneDidChange(to phase: ScenePhase, enabled: Bool) {
-        if phase == .background && enabled {
+        if phase == .background, enabled {
             lock()
         }
     }

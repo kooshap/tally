@@ -73,7 +73,7 @@ final class SchemaMigrationTests: XCTestCase {
         let mortgage = try XCTUnwrap(try accounts(in: context).last)
 
         XCTAssertEqual(mortgage.archivedOn, feb29)
-        XCTAssertEqual(mortgage.ledger.entries.map { $0.amount }, [300_000, 0])
+        XCTAssertEqual(mortgage.ledger.entries.map(\.amount), [300_000, 0])
     }
 
     func testTheV1StoreKeepsItsCachedRates() throws {
@@ -136,10 +136,20 @@ final class SchemaMigrationTests: XCTestCase {
     }
 
     func testSchemaVersionsOnlyEverIncrease() {
+        // A key path here crashes the Swift 6.4 compiler, since the elements
+        // are existential metatypes.
+        // swiftlint:disable:next prefer_key_path
         let versions = TallyMigrationPlan.schemas.map { $0.versionIdentifier }
 
         XCTAssertEqual(versions, versions.sorted())
         XCTAssertEqual(Set(versions).count, versions.count)
         XCTAssertEqual(TallyMigrationPlan.stages.count, versions.count - 1, "one stage between each pair of versions")
+    }
+
+    /// The store keeps an account's type as its raw value, and the V1 fixture
+    /// has no real estate account, so renaming a case would orphan stored
+    /// accounts without failing the tests above.
+    func testAccountTypesKeepTheRawValuesTheStoreHolds() {
+        XCTAssertEqual(AccountType.allCases.map(\.rawValue), ["bank", "broker", "realEstate", "debt"])
     }
 }

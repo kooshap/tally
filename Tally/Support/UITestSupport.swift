@@ -44,7 +44,7 @@ enum UITestSupport {
     }
 
     static func makeContainer() throws -> ModelContainer {
-        if isRunningUITests && ProcessInfo.processInfo.arguments.contains(unopenableStoreArgument) {
+        if isRunningUITests, ProcessInfo.processInfo.arguments.contains(unopenableStoreArgument) {
             return try openUnopenableStore()
         }
         guard isRunningUITests || isHostingUnitTests else {

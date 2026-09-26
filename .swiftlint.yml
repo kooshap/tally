@@ -18,22 +18,34 @@ opt_in_rules:
   - contains_over_filter_count
   - contains_over_filter_is_empty
   - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - empty_collection_literal
   - empty_count
   - empty_string
   - first_where
+  - flatmap_over_map_reduce
   - last_where
+  - reduce_into
   - sorted_first_last
   # Idioms
+  - discouraged_assert
   - fatal_error_message
+  - legacy_multiple
+  - prefer_condition_list
+  - prefer_key_path
   - prefer_self_in_static_references
   - redundant_nil_coalescing
+  - return_value_from_void_function
   - shorthand_optional_binding
   - toggle_bool
   # Likely bugs
+  - async_without_await
   - force_unwrapping # off again in the test targets' own configs
   - identical_operands
   - implicitly_unwrapped_optional # likewise
+  - lower_acl_than_parent
   - unhandled_throwing_task
+  - unneeded_escaping
   - unowned_variable_capture
   # SwiftUI
   - accessibility_label_for_image
@@ -42,12 +54,14 @@ opt_in_rules:
   # Tests
   - empty_xctest_method
   - final_test_case
+  - test_case_accessibility
   - xct_specific_matcher
 
 # Run by `swiftlint analyze`, which reads a full xcodebuild log; `lint` skips
 # them. CI's lint job does this. unused_declaration is left off because it flags
 # @State that's only read through its `$` binding.
 analyzer_rules:
+  - capture_variable
   - unused_import
 
 opening_brace:

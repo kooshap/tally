@@ -103,7 +103,8 @@ final class RatesCoordinatorTests: XCTestCase {
         await coordinator.refresh(.ninetyDays, context: context, settings: settings)
 
         guard case .failed = coordinator.status else {
-            return XCTFail("expected a failed status, got \(coordinator.status)")
+            XCTFail("expected a failed status, got \(coordinator.status)")
+            return
         }
         XCTAssertEqual(coordinator.table.unitsPerEUR("USD", on: september22), 2)
         XCTAssertNil(settings.lastRatesFetch, "a failure must not count as today's fetch")

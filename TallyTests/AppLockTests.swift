@@ -18,7 +18,7 @@ private final class FakeDevice: DeviceOwnerAuthenticating {
         return hasPasscode
     }
 
-    func evaluatePolicy(_ policy: LAPolicy, localizedReason: String) async throws -> Bool {
+    func evaluatePolicy(_ policy: LAPolicy, localizedReason: String) throws -> Bool {
         policies.append(policy)
         reasons.append(localizedReason)
         return try outcome.get()
