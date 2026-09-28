@@ -69,8 +69,12 @@ struct UpdateAllView: View {
                         Text(lastKnownText(for: account))
                             .foregroundStyle(.secondary)
                     }
-                    AmountField(title: "Amount", text: $run[draftFor: account.id], currencyCode: account.currencyCode)
-                        .accessibilityIdentifier("updateAll.amountField")
+                    AmountField(
+                        title: "Amount",
+                        text: $run[draftFor: account.id],
+                        currencyCode: account.currencyCode,
+                        accessibilityIdentifier: "updateAll.amountField"
+                    )
                 } header: {
                     // The explicit specifier keeps Xcode's string export from
                     // keying this as "%@", which the catalog doesn't translate.

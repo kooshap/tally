@@ -56,9 +56,9 @@ struct AccountEditorView: View {
                         AmountField(
                             title: "Opening balance (optional)",
                             text: $form.openingBalance,
-                            currencyCode: form.currencyCode
+                            currencyCode: form.currencyCode,
+                            accessibilityIdentifier: "account.openingBalanceField"
                         )
-                        .accessibilityIdentifier("account.openingBalanceField")
                     } footer: {
                         if form.isOpeningBalanceNegativeAndDisallowed {
                             Text(

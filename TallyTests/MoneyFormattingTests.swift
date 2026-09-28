@@ -116,6 +116,39 @@ final class MoneyFormattingTests: XCTestCase {
         XCTAssertNil(MoneyFormatting.parse("abc", code: "EUR", locale: american))
     }
 
+    // MARK: - One keystroke at a time
+
+    private func edit(_ text: String, _ range: Range<Int>, _ replacement: String) -> (text: String, caret: Int) {
+        MoneyFormatting.applyingEdit(to: text, replacing: range, with: replacement, locale: american)
+    }
+
+    func testTypingADigitRegroups() {
+        XCTAssertTrue(edit("1,234", 5..<5, "5") == ("12,345", 6))
+        XCTAssertTrue(edit("1,234", 1..<1, "9") == ("19,234", 2), "typed after the 1, the caret stays after the 9")
+    }
+
+    /// The race the UIKit field exists to avoid: every delete must land.
+    func testDeletingEveryCharacterEmptiesTheField() {
+        var state = (text: "4,000", caret: 5)
+        for _ in 0..<5 where state.caret > 0 {
+            state = edit(state.text, (state.caret - 1)..<state.caret, "")
+        }
+        XCTAssertEqual(state.text, "")
+    }
+
+    func testDeletingAGroupingMarkDeletesTheDigitBeforeIt() {
+        XCTAssertTrue(edit("1,234", 1..<2, "") == ("234", 0))
+        XCTAssertTrue(edit("12,345", 2..<3, "") == ("1,345", 1))
+    }
+
+    func testPastingReplacesTheSelection() {
+        XCTAssertTrue(edit("1,234", 0..<5, "9876543") == ("9,876,543", 9))
+    }
+
+    func testAnEditOutsideTheTextIsClamped() {
+        XCTAssertTrue(edit("12", 5..<9, "3") == ("123", 3))
+    }
+
     // MARK: - Display
 
     func testStringShowsUpToTwoDecimals() {

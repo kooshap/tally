@@ -62,9 +62,7 @@ enum MoneyFormatting {
     ) -> (text: String, caret: Int) {
         let unchanged = (text, caret)
         let decimalSeparator = Character(locale.decimalSeparator ?? ".")
-        let groupingMarks = Set([locale.groupingSeparator ?? ",", " ", "\u{00A0}", "\u{202F}", "'", "’"])
-            .compactMap(\.first)
-            .filter { $0 != decimalSeparator }
+        let groupingMarks = groupingMarks(locale)
 
         var rest = Substring(text)
         var sign = ""
@@ -99,6 +97,39 @@ enum MoneyFormatting {
             if !groupingMarks.contains(character) { seen += 1 }
         }
         return (result, newCaret)
+    }
+
+    /// An amount field's text after one keystroke or paste: `replacement`
+    /// put in place of the characters at `range`, then regrouped. `range` and
+    /// the returned caret are character offsets. Deleting only a grouping mark
+    /// deletes the digit before it too, since the mark alone would just come
+    /// straight back.
+    static func applyingEdit(
+        to text: String,
+        replacing range: Range<Int>,
+        with replacement: String,
+        locale: Locale = .current
+    ) -> (text: String, caret: Int) {
+        var characters = Array(text)
+        var range = range.clamped(to: 0..<characters.count)
+        if replacement.isEmpty, range.count == 1, range.lowerBound > 0,
+            groupingMarks(locale).contains(characters[range.lowerBound])
+        {
+            range = (range.lowerBound - 1)..<range.upperBound
+        }
+        characters.replaceSubrange(range, with: Array(replacement))
+        return regroupedForTyping(String(characters), caret: range.lowerBound + replacement.count, locale: locale)
+    }
+
+    /// What may separate groups of digits as typed: the locale's own mark, and
+    /// the spaces and apostrophes people type for it.
+    private static func groupingMarks(_ locale: Locale) -> Set<Character> {
+        let decimalSeparator = Character(locale.decimalSeparator ?? ".")
+        return Set(
+            [locale.groupingSeparator ?? ",", " ", "\u{00A0}", "\u{202F}", "'", "’"]
+                .compactMap(\.first)
+                .filter { $0 != decimalSeparator }
+        )
     }
 
     /// Reads a typed amount, tolerating grouping separators and a stray symbol.
