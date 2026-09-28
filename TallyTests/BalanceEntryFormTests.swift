@@ -134,7 +134,7 @@ final class BalanceEntryFormTests: XCTestCase {
 
         let form = BalanceEntryForm(account: account, entry: entry, locale: english)
 
-        XCTAssertEqual(form.amountText, "1234.5")
+        XCTAssertEqual(form.amountText, "1,234.5")
         XCTAssertEqual(form.day, day)
         XCTAssertEqual(form.notice, .dateIsFixed)
         XCTAssertFalse(form.wouldOverwrite, "an entry does not replace itself")

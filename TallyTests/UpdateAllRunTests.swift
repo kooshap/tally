@@ -43,7 +43,7 @@ final class UpdateAllRunTests: XCTestCase {
 
         let run = makeRun([savings, fresh])
 
-        XCTAssertEqual(run.drafts[savings.id], "1234.5")
+        XCTAssertEqual(run.drafts[savings.id], "1,234.5")
         XCTAssertNil(run.drafts[fresh.id], "an account with no balance starts empty")
         XCTAssertEqual(run.day, runDay)
         XCTAssertIdentical(run.current, savings)
@@ -57,7 +57,7 @@ final class UpdateAllRunTests: XCTestCase {
 
         let run = UpdateAllRun(accounts: [account], locale: Locale(identifier: "de_DE"))
 
-        XCTAssertEqual(run.drafts[account.id], "1234,5")
+        XCTAssertEqual(run.drafts[account.id], "1.234,5")
         XCTAssertEqual(run.amount(for: account), Decimal(string: "1234.5"), "reads back as the same amount")
     }
 

@@ -30,12 +30,68 @@ final class MoneyFormattingTests: XCTestCase {
     /// reads as a grouping separator, so 4000.50 came back as 4000.
     func testEditableStringUsesTheLocaleDecimalSeparator() {
         let amount = Decimal(string: "4000.5")!
-        XCTAssertEqual(MoneyFormatting.editableString(amount, locale: german), "4000,5")
-        XCTAssertEqual(MoneyFormatting.editableString(amount, locale: american), "4000.5")
+        XCTAssertEqual(MoneyFormatting.editableString(amount, locale: german), "4.000,5")
+        XCTAssertEqual(MoneyFormatting.editableString(amount, locale: american), "4,000.5")
     }
 
-    func testEditableStringHasNoGroupingOrSymbol() {
-        XCTAssertEqual(MoneyFormatting.editableString(1_234_567, locale: american), "1234567")
+    func testEditableStringIsGroupedWithoutASymbol() {
+        XCTAssertEqual(MoneyFormatting.editableString(1_234_567, locale: american), "1,234,567")
+        XCTAssertEqual(MoneyFormatting.editableString(1_234_567, locale: german), "1.234.567")
+    }
+
+    // MARK: - Grouping while typing
+
+    private func regrouped(_ text: String, caret: Int? = nil, locale: Locale) -> (text: String, caret: Int) {
+        MoneyFormatting.regroupedForTyping(text, caret: caret ?? text.count, locale: locale)
+    }
+
+    func testTypingGroupsTheWholeNumber() {
+        XCTAssertEqual(regrouped("1234567", locale: american).text, "1,234,567")
+        XCTAssertEqual(regrouped("1234567", locale: german).text, "1.234.567")
+        XCTAssertEqual(regrouped("123", locale: american).text, "123")
+    }
+
+    func testTypingRegroupsAfterADeletion() {
+        XCTAssertEqual(regrouped("1,23", locale: american).text, "123")
+        XCTAssertEqual(regrouped("12,3456", locale: american).text, "123,456")
+    }
+
+    func testTypingKeepsTheSignAndWhatFollowsTheDecimalSeparator() {
+        XCTAssertEqual(regrouped("-12345", locale: american).text, "-12,345")
+        XCTAssertEqual(regrouped("-", locale: american).text, "-")
+        XCTAssertEqual(regrouped("12345.", locale: american).text, "12,345.")
+        XCTAssertEqual(regrouped("12345.50", locale: american).text, "12,345.50")
+        XCTAssertEqual(regrouped("12345,5", locale: german).text, "12.345,5")
+        XCTAssertEqual(regrouped(".5", locale: american).text, ".5")
+    }
+
+    func testTypingLeavesAnythingElseAlone() {
+        XCTAssertEqual(regrouped("€1250", locale: american).text, "€1250")
+        XCTAssertEqual(regrouped("1.2.3", locale: american).text, "1.2.3")
+        XCTAssertEqual(regrouped("abc", locale: american).text, "abc")
+    }
+
+    func testTypedAmountsStillParse() {
+        for (text, locale) in [
+            ("1234567.89", american), ("1234567,89", german), ("1234567,89", french), ("1234567.89", swiss),
+        ] {
+            let typed = regrouped(text, locale: locale).text
+            XCTAssertEqual(
+                MoneyFormatting.parse(typed, code: "EUR", locale: locale), Decimal(string: "1234567.89"),
+                "\"\(typed)\" in \(locale.identifier)"
+            )
+        }
+    }
+
+    func testTheCaretStaysAfterTheDigitItFollowed() {
+        // Typing a 5 after the 3 of "123,4": "1235,4" with the caret after the 5.
+        XCTAssertEqual(regrouped("1235,4", caret: 4, locale: american).caret, 5)  // "12,35|4"
+        // At the end, it stays at the end.
+        XCTAssertEqual(regrouped("1234", locale: american).caret, 5)
+        // Deleting the 4 of "1,234": "1,23" with the caret at the end.
+        XCTAssertEqual(regrouped("1,23", locale: american).caret, 3)
+        // At the start, it stays at the start.
+        XCTAssertEqual(regrouped("91234", caret: 0, locale: american).caret, 0)
     }
 
     // MARK: - Parsing what people type

@@ -541,6 +541,17 @@
         }
       }
     },
+    "Amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Betrag"
+          }
+        }
+      }
+    },
     "Amount in %@": {
       "extractionState": "manual",
       "localizations": {

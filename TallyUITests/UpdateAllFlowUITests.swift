@@ -25,16 +25,17 @@ final class UpdateAllFlowUITests: XCTestCase {
         // Account 1 of 2 — pre-filled with the seeded balance, then edited.
         let amountField = app.textFields["updateAll.amountField"]
         XCTAssertTrue(amountField.waitForExistence(timeout: 5))
-        XCTAssertEqual(amountField.value as? String, "4000")
+        XCTAssertEqual(amountField.value as? String, "4,000")
 
         // Clear by deleting rather than through the edit menu, which doesn't
-        // reliably appear on a long press. Tapping the trailing edge puts the
+        // reliably appear on a long press. Tapping the empty space past the
+        // figure, short of the currency code at the trailing edge, puts the
         // cursor after the pre-filled text.
-        amountField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        amountField.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.5)).tap()
         let prefilled = amountField.value as? String ?? ""
         amountField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: prefilled.count))
         amountField.typeText("4500")
-        XCTAssertEqual(amountField.value as? String, "4500")
+        XCTAssertEqual(amountField.value as? String, "4,500")
 
         app.buttons["updateAll.nextButton"].tap()
 

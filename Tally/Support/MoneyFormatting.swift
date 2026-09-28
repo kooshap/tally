@@ -34,17 +34,71 @@ enum MoneyFormatting {
         return formatted
     }
 
-    /// What an amount field is pre-filled with: no symbol, no grouping, and the
-    /// locale's decimal separator, so `parse` reads back exactly this amount.
-    /// `"\(amount)"` would not survive a round trip in a locale such as German,
-    /// where the `.` it writes is a grouping separator.
+    /// What an amount field is pre-filled with: no symbol, the locale's
+    /// grouping, and its decimal separator, so `parse` reads back exactly this
+    /// amount. `"\(amount)"` would not survive a round trip in a locale such as
+    /// German, where the `.` it writes is a grouping separator.
     static func editableString(_ amount: Decimal, locale: Locale = .current) -> String {
         amount.formatted(
             .number
                 .locale(locale)
-                .grouping(.never)
+                .grouping(.automatic)
                 .precision(.fractionLength(0...10))
         )
+    }
+
+    /// Regroups the whole-number digits of a half-typed amount — 1234567
+    /// becomes 1,234,567 — and keeps the rest as typed: the sign, a trailing
+    /// decimal separator, and fraction digits. Anything that isn't a plain
+    /// number comes back untouched, leaving the verdict to `parse`.
+    ///
+    /// `caret` is the insertion point as a character offset into `text`. It
+    /// comes back moved to sit after the same digit it followed before, so
+    /// typing or deleting mid-number doesn't throw the cursor to the end.
+    static func regroupedForTyping(
+        _ text: String,
+        caret: Int,
+        locale: Locale = .current
+    ) -> (text: String, caret: Int) {
+        let unchanged = (text, caret)
+        let decimalSeparator = Character(locale.decimalSeparator ?? ".")
+        let groupingMarks = Set([locale.groupingSeparator ?? ",", " ", "\u{00A0}", "\u{202F}", "'", "’"])
+            .compactMap(\.first)
+            .filter { $0 != decimalSeparator }
+
+        var rest = Substring(text)
+        var sign = ""
+        if let first = rest.first, first == "-" || first == "−" {
+            sign = String(first)
+            rest = rest.dropFirst()
+        }
+        let parts = rest.split(separator: decimalSeparator, maxSplits: 1, omittingEmptySubsequences: false)
+        let digits = parts[0].filter { !groupingMarks.contains($0) }
+        let fraction = parts.count > 1 ? String(decimalSeparator) + parts[1] : ""
+
+        let isPlainDigits: (Substring) -> Bool = { $0.allSatisfy { $0.isASCII && $0.isNumber } }
+        // Past 30 digits `Decimal` starts rounding, which would rewrite what was typed.
+        guard isPlainDigits(Substring(digits)), isPlainDigits(fraction.dropFirst()), digits.count <= 30 else {
+            return unchanged
+        }
+
+        let grouped =
+            digits.isEmpty
+            ? ""
+            : (Decimal(string: digits) ?? 0).formatted(.number.locale(locale).grouping(.automatic))
+        let result = sign + grouped + fraction
+
+        // Everything but grouping marks is carried over one for one, so the
+        // caret belongs after as many of those as it followed before.
+        let kept = text.prefix(caret).count { !groupingMarks.contains($0) }
+        var newCaret = 0
+        var seen = 0
+        for character in result {
+            if seen == kept { break }
+            newCaret += 1
+            if !groupingMarks.contains(character) { seen += 1 }
+        }
+        return (result, newCaret)
     }
 
     /// Reads a typed amount, tolerating grouping separators and a stray symbol.

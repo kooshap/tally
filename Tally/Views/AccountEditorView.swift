@@ -53,9 +53,12 @@ struct AccountEditorView: View {
 
                 if !form.isEditing {
                     Section {
-                        TextField("Opening balance (optional)", text: $form.openingBalance)
-                            .keyboardType(.numbersAndPunctuation)
-                            .accessibilityIdentifier("account.openingBalanceField")
+                        AmountField(
+                            title: "Opening balance (optional)",
+                            text: $form.openingBalance,
+                            currencyCode: form.currencyCode
+                        )
+                        .accessibilityIdentifier("account.openingBalanceField")
                     } footer: {
                         if form.isOpeningBalanceNegativeAndDisallowed {
                             Text(

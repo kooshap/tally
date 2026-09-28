@@ -69,8 +69,7 @@ struct UpdateAllView: View {
                         Text(lastKnownText(for: account))
                             .foregroundStyle(.secondary)
                     }
-                    TextField("Amount in \(account.currencyCode)", text: $run[draftFor: account.id])
-                        .keyboardType(.numbersAndPunctuation)
+                    AmountField(title: "Amount", text: $run[draftFor: account.id], currencyCode: account.currencyCode)
                         .accessibilityIdentifier("updateAll.amountField")
                 } header: {
                     // The explicit specifier keeps Xcode's string export from

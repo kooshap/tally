@@ -18,8 +18,7 @@ struct BalanceEntryEditor: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Amount in \(form.account.currencyCode)", text: $form.amountText)
-                        .keyboardType(.numbersAndPunctuation)
+                    AmountField(title: "Amount", text: $form.amountText, currencyCode: form.account.currencyCode)
                         .accessibilityIdentifier("entry.amountField")
 
                     DatePicker(
