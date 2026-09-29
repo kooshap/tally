@@ -54,6 +54,8 @@ xcodebuild test -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 1
 ## Git
 
 - Commit directly on `main`, only when asked. Never push unless asked.
+- Never create or push a `testflight/*` tag unless asked: each one ships a
+  build to testers. A plain push to `main` only runs GitHub Actions.
 - No `Co-Authored-By` trailers.
 - The subject says what changed for the user, in sentence case. The body says
   why, wrapped at about 72 columns.

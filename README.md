@@ -186,14 +186,27 @@ Two systems, each with one job:
   as errors. It uses a pinned Xcode, so a runner image update can't change the
   compiler.
 - **Xcode Cloud** only ships. Its "Internal TestFlight Build" workflow
-  archives the app and uploads it to TestFlight. `ci_scripts/ci_post_clone.sh`
-  generates the project first, since it isn't committed. Its "Default"
-  workflow, which built and tested again, is disabled because it only repeated
-  GitHub Actions.
+  archives the app and uploads it to TestFlight, and starts only for a pushed
+  `testflight/*` tag (or by hand), never for a plain push.
+  `ci_scripts/ci_post_clone.sh` generates the project first, since it isn't
+  committed. Its "Default" workflow, which built and tested again, is disabled
+  because it only repeated GitHub Actions.
 
-The TestFlight archive doesn't wait for GitHub Actions, so a commit that fails
-CI can still reach TestFlight. Check that CI is green before handing a build
-to testers.
+### Shipping to TestFlight
+
+The archive doesn't wait for GitHub Actions, so tag only a commit that has
+already passed CI:
+
+```sh
+gh run list --commit "$(git rev-parse HEAD)"   # CI must show success
+git tag testflight/1.0-beta.1
+git push origin testflight/1.0-beta.1
+```
+
+Xcode Cloud sets the build number itself. `MARKETING_VERSION` in `project.yml`
+is the version testers see; raise it when starting work toward a new App Store
+release, and name the tags after it. To see what changed between two builds:
+`git log testflight/1.0-beta.1..testflight/1.0-beta.2`.
 
 ## Not in v1
 
