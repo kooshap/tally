@@ -60,7 +60,9 @@ Cloud signs with; change it to your own to run a fork on a device.
 ```
 project.yml                 XcodeGen spec (iOS 18, iPhone, portrait)
 SPEC.md                     The build spec this implements
+CLAUDE.md                   Rules and pre-commit checks for coding agents
 BuildTools/                 Pinned XcodeGen, swift-format, and SwiftLint
+ci_scripts/                 Xcode Cloud's post-clone step: generate the project
 Tally/
   Domain/                   Pure value types — no SwiftData, no SwiftUI
     CalendarDay             A day with no time zone (see below)
@@ -170,8 +172,28 @@ from source, which takes a couple of minutes the first time. The hook, CI, and
 Xcode Cloud all go through it, so a new release upstream can't change what
 counts as clean. To upgrade a tool, see the top of `BuildTools/tool`.
 
-On every push, CI runs both alongside the full test suite, which it builds
-with warnings treated as errors.
+The hook sees only staged files, and it can't run `swiftlint analyze`, which
+catches unused imports but needs a build. [CLAUDE.md](CLAUDE.md) lists the
+commands that match CI; together they take under a minute.
+
+## CI
+
+Two systems, each with one job:
+
+- **GitHub Actions** ([ci.yml](.github/workflows/ci.yml)) checks every push on
+  every branch. It runs the formatting check, lint, and `swiftlint analyze`,
+  then the unit and UI tests and a Release build, all with warnings treated
+  as errors. It uses a pinned Xcode, so a runner image update can't change the
+  compiler.
+- **Xcode Cloud** only ships. Its "Internal TestFlight Build" workflow
+  archives the app and uploads it to TestFlight. `ci_scripts/ci_post_clone.sh`
+  generates the project first, since it isn't committed. Its "Default"
+  workflow, which built and tested again, is disabled because it only repeated
+  GitHub Actions.
+
+The TestFlight archive doesn't wait for GitHub Actions, so a commit that fails
+CI can still reach TestFlight. Check that CI is green before handing a build
+to testers.
 
 ## Not in v1
 
