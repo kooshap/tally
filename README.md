@@ -154,6 +154,25 @@ The rules the editors apply — validation, which amounts may be negative, which
 entry a swipe deletes, when the app re-locks — live in `Forms/`, `BalanceStore`,
 and `AppLock`, where they are unit tested; what's left in the views is layout.
 
+## App Store screenshots
+
+```sh
+Screenshots/capture
+```
+
+writes the six App Store screenshots, in English and German, to
+`Screenshots/Output/` at 1320 × 2868 (the 6.9" iPhone size, which App Store
+Connect scales down for smaller iPhones). It boots the iPhone 17 Pro Max
+simulator (`DEVICE=` picks another), sets light mode and a 9:41 status bar,
+and runs `AppStoreScreenshotTests`, which the everyday test run skips.
+
+The app is launched with `-uiTestingScreenshotPortfolio`, which seeds an
+in-memory store from `ScreenshotPortfolio`: seven accounts in four currencies,
+updated at the end of each of the last 36 months, with a rate for every one of
+those days. The figures are fixed, so every run draws the same charts, and
+`ScreenshotPortfolioTests` fails if a gap in the rates would put the
+missing-rates banner on screen.
+
 ## Code style
 
 `swift-format` owns layout (`.swift-format`: 4 spaces, 120 columns) and

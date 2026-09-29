@@ -1,0 +1,67 @@
+#!/bin/sh
+# Takes the App Store screenshots, in English and German, on the 6.9" iPhone
+# App Store Connect asks for (1320 x 2868), and writes them to
+# Screenshots/Output/<language>/.
+#
+#   Screenshots/capture
+#   DEVICE="iPhone 16 Pro Max" Screenshots/capture
+#
+# The app is launched against ScreenshotPortfolio, an in-memory store the test
+# seeds, so nothing on the simulator is read or changed, and no rates are
+# downloaded.
+set -eu
+
+cd "$(dirname "$0")/.."
+device=${DEVICE:-iPhone 17 Pro Max}
+result=build/screenshots.xcresult
+output=Screenshots/Output
+
+udid=$(xcrun simctl list devices available --json |
+    jq -r --arg name "$device" '[.devices[][] | select(.name == $name)][0].udid // empty')
+if [ -z "$udid" ]; then
+    echo "No available simulator named \"$device\". Pick one from: xcrun simctl list devices available" >&2
+    exit 1
+fi
+
+echo "Booting $device ($udid)"
+xcrun simctl boot "$udid" 2>/dev/null || true
+xcrun simctl bootstatus "$udid" -b > /dev/null
+
+# Light mode and Apple's clean status bar; the override is cleared on exit.
+xcrun simctl ui "$udid" appearance light
+xcrun simctl status_bar "$udid" override \
+    --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
+    --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+trap 'xcrun simctl status_bar "$udid" clear' EXIT
+
+BuildTools/tool xcodegen generate --quiet
+
+echo "Running AppStoreScreenshotTests"
+mkdir -p build
+rm -rf "$result"
+# xcodebuild hands TEST_RUNNER_-prefixed variables to the tests, without the prefix.
+TEST_RUNNER_TALLY_SCREENSHOTS=1 xcodebuild test \
+    -scheme Tally \
+    -destination "id=$udid" \
+    -only-testing:TallyUITests/AppStoreScreenshotTests \
+    -resultBundlePath "$result" \
+    -quiet \
+    CODE_SIGNING_ALLOWED=NO
+
+exported=$(mktemp -d)
+xcrun xcresulttool export attachments --path "$result" --output-path "$exported" > /dev/null
+
+rm -rf "$output"
+# Attachments are named <language>-<nn>-<screen> by the test; the export
+# adds a suffix, which is dropped here.
+jq -r '.[].attachments[] | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$exported/manifest.json" |
+    while IFS="$(printf '\t')" read -r file name; do
+        language=${name%%-*}
+        screen=$(echo "${name#*-}" | sed -E 's/_[0-9]+_[0-9A-F-]+//; s/\.png$//')
+        mkdir -p "$output/$language"
+        mv "$exported/$file" "$output/$language/$screen.png"
+    done
+rm -rf "$exported"
+
+count=$(find "$output" -name '*.png' | wc -l | tr -d ' ')
+echo "Wrote $count screenshots to $output/"

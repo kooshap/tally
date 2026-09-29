@@ -10,6 +10,9 @@ enum UITestSupport {
     /// Launches against a store that can't be opened, to reach the recovery
     /// screen.
     static let unopenableStoreArgument = "-uiTestingUnopenableStore"
+    /// Seeds `ScreenshotPortfolio`, three years of it, instead of the two
+    /// accounts the other UI tests use.
+    static let screenshotPortfolioArgument = "-uiTestingScreenshotPortfolio"
 
     static var isRunningUITests: Bool {
         ProcessInfo.processInfo.arguments.contains(resetArgument)
@@ -67,12 +70,22 @@ enum UITestSupport {
         return try TallyStore.open(ModelConfiguration(url: url), backingUpTo: backups)
     }
 
-    /// Two accounts with a known last balance, which is what the update flow
-    /// pre-fills from. Written before the first frame, so no view can see an
-    /// empty store and act on it.
+    /// Written before the first frame, so no view can see an empty store and
+    /// act on it.
     static func seed(_ container: ModelContainer) {
         guard isRunningUITests else { return }
         let context = ModelContext(container)
+        if ProcessInfo.processInfo.arguments.contains(screenshotPortfolioArgument) {
+            seedScreenshotPortfolio(in: context)
+        } else {
+            seedTwoAccounts(in: context)
+        }
+        try? context.save()
+    }
+
+    /// Two accounts with a known last balance, which is what the update flow
+    /// pre-fills from.
+    private static func seedTwoAccounts(in context: ModelContext) {
         let day = CalendarDay.today()
 
         let current = Account(name: "Current account", type: .bank, currencyCode: "EUR", sortOrder: 0)
@@ -83,7 +96,23 @@ enum UITestSupport {
         BalanceStore.record(4_000, on: day, for: current, in: context)
         BalanceStore.record(300_000, on: day, for: mortgage, in: context)
         context.insert(FXRate(day: day, currencyCode: "USD", unitsPerEUR: 1.1))
+    }
 
-        try? context.save()
+    /// Account names follow the language the app was launched in, so the
+    /// German screenshots show German accounts.
+    private static func seedScreenshotPortfolio(in context: ModelContext) {
+        let today = CalendarDay.today()
+        let language = Bundle.main.preferredLocalizations.first ?? "en"
+
+        for (index, plan) in ScreenshotPortfolio.accounts(today: today, languageCode: language).enumerated() {
+            let account = Account(name: plan.name, type: plan.type, currencyCode: plan.currencyCode, sortOrder: index)
+            context.insert(account)
+            for entry in plan.entries {
+                BalanceStore.record(entry.amount, on: entry.day, for: account, in: context)
+            }
+        }
+        for quote in ScreenshotPortfolio.quotes(today: today) {
+            context.insert(FXRate(day: quote.day, currencyCode: quote.currencyCode, unitsPerEUR: quote.unitsPerEUR))
+        }
     }
 }
