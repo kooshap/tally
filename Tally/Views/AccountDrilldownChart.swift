@@ -1,4 +1,3 @@
-import Charts
 import SwiftUI
 
 /// Mode 3: one account's line, in its own currency, with a toggle for the
