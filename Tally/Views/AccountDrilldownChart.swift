@@ -12,8 +12,10 @@ struct AccountDrilldownChart: View {
     @Binding var selectedAccountID: UUID?
     let rates: RateTable
     let baseCurrency: String
+    let range: ChartRange
 
     @State private var showInBaseCurrency = false
+    @State private var selectedDay: CalendarDay?
 
     private var selectedAccount: Account? {
         accounts.first { $0.id == selectedAccountID } ?? accounts.first
@@ -29,17 +31,12 @@ struct AccountDrilldownChart: View {
         return (showInBaseCurrency && isForeign) ? baseCurrency : selectedAccount.currencyCode
     }
 
-    private struct Sample: Identifiable {
-        let id: Int
-        let date: Date
-        let amount: Double
-    }
-
-    private var samples: [Sample] {
+    private var samples: [TrendLineChart.Sample] {
         guard let account = selectedAccount else { return [] }
-        return account.ledger.history(convertedTo: displayCurrency, using: rates).map { point in
-            Sample(id: point.day.rawValue, date: point.day.date(), amount: point.amount.plotted)
-        }
+        let today = CalendarDay.today()
+        return account.ledger.history(convertedTo: displayCurrency, using: rates)
+            .filter { range.includes($0.day, today: today) }
+            .map { TrendLineChart.Sample(day: $0.day, amount: $0.amount) }
     }
 
     var body: some View {
@@ -62,36 +59,38 @@ struct AccountDrilldownChart: View {
                     .font(.subheadline)
             }
 
+            let samples = samples
             if samples.isEmpty {
-                Text("This account has no balances yet.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(height: 240)
+                Text(
+                    range == .all ? "This account has no balances yet." : "This account has no balances in this period."
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(height: 220)
             } else {
-                Chart(samples) { sample in
-                    LineMark(
-                        x: .value("Date", sample.date),
-                        y: .value("Value", sample.amount)
-                    )
-                    .interpolationMethod(.monotone)
+                readout(samples)
 
-                    PointMark(
-                        x: .value("Date", sample.date),
-                        y: .value("Value", sample.amount)
-                    )
-                }
-                .chartYAxis {
-                    AxisMarks { value in
-                        AxisGridLine()
-                        AxisValueLabel {
-                            if let amount = value.as(Double.self) {
-                                Text(MoneyFormatting.compact(Decimal(amount), code: displayCurrency))
-                            }
-                        }
-                    }
-                }
-                .frame(height: 240)
+                TrendLineChart(
+                    samples: samples,
+                    upIsGood: selectedAccount?.type.isLiability != true,
+                    selectedDay: $selectedDay
+                )
             }
+        }
+    }
+
+    /// The account's own figure: the selected day's while dragging, else its
+    /// latest balance in the range.
+    private func readout(_ samples: [TrendLineChart.Sample]) -> some View {
+        let shown = selectedDay.flatMap { day in samples.first { $0.day == day } } ?? samples.last
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(shown.map { MoneyFormatting.string($0.amount, code: displayCurrency) } ?? "—")
+                .font(.title3.weight(.semibold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+            Text(shown.map { $0.day.date().formatted(.dateTime.day().month(.abbreviated).year()) } ?? "")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 }

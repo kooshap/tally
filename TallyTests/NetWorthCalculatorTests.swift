@@ -196,30 +196,22 @@ final class NetWorthCalculatorTests: XCTestCase {
 
     // MARK: - Headline
 
-    func testHeadlineReportsChangeSinceThePreviousPoint() {
-        let series = NetWorthCalculator.series(
-            ledgers: [AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 1_000), (feb, 1_250)])],
-            rates: flatRates(),
-            baseCurrency: "EUR"
-        )
+    func testChangeIsTheMovementAndItsShareOfTheStart() {
+        let change = NetWorthCalculator.change(from: 1_000, to: 1_250)
+        XCTAssertEqual(change.amount, 250)
+        XCTAssertEqual(change.fraction, Decimal(string: "0.25"))
 
-        let headline = NetWorthCalculator.headline(series)
-        XCTAssertEqual(headline?.current.day, feb)
-        XCTAssertEqual(headline?.change, 250)
+        let fall = NetWorthCalculator.change(from: 1_000, to: 800)
+        XCTAssertEqual(fall.amount, -200)
+        XCTAssertEqual(fall.fraction, Decimal(string: "-0.2"))
     }
 
-    func testHeadlineHasNoChangeOnTheFirstEverPoint() {
-        let series = NetWorthCalculator.series(
-            ledgers: [AccountLedger(type: .bank, currencyCode: "EUR", entries: [(jan, 1_000)])],
-            rates: flatRates(),
-            baseCurrency: "EUR"
-        )
-
-        XCTAssertNil(NetWorthCalculator.headline(series)?.change)
-    }
-
-    func testEmptyPortfolioHasNoHeadline() {
-        XCTAssertNil(NetWorthCalculator.headline([]))
+    /// Climbing from −1,000 to −500 is a gain, but as a share of a negative start
+    /// it would read as −50%.
+    func testChangeHasNoPercentageFromZeroOrBelow() {
+        XCTAssertEqual(NetWorthCalculator.change(from: -1_000, to: -500).amount, 500)
+        XCTAssertNil(NetWorthCalculator.change(from: -1_000, to: -500).fraction)
+        XCTAssertNil(NetWorthCalculator.change(from: 0, to: 500).fraction)
     }
 
     // MARK: - One account's line

@@ -55,6 +55,7 @@ private struct DashboardContent: View {
     let accounts: [Account]
 
     @State private var mode: ChartMode = .total
+    @State private var range: ChartRange = .oneYear
     @State private var selectedDay: CalendarDay?
     @State private var drilldownAccountID: UUID?
 
@@ -67,9 +68,14 @@ private struct DashboardContent: View {
     }
 
     var body: some View {
+        let today = CalendarDay.today()
+        let offeredRanges = ChartRange.offered(for: plottable.map(\.day), today: today)
+        let shownRange = offeredRanges.contains(range) ? range : .all
+        let window = plottable.filter { shownRange.includes($0.day, today: today) }
+
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                headline
+                headline(window: window)
 
                 if !pointsMissingRates.isEmpty {
                     MissingRatesBanner(points: pointsMissingRates) {
@@ -89,65 +95,91 @@ private struct DashboardContent: View {
                     }
                     .pickerStyle(.segmented)
 
-                    chart
+                    chart(window: window, range: shownRange)
+
+                    if offeredRanges.count > 1 {
+                        Picker("Range", selection: $range) {
+                            ForEach(offeredRanges) { range in
+                                Text(range.shortLabel)
+                                    .accessibilityLabel(range.spokenLabel)
+                                    .tag(range)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
                 }
             }
             .padding()
         }
         .navigationTitle("Net worth")
+        .onChange(of: range) { selectedDay = nil }
+        .onChange(of: mode) { selectedDay = nil }
     }
 
+    /// Today's net worth, or the selected day's while dragging, with the
+    /// change since the first point in the chart's range.
     @ViewBuilder
-    private var headline: some View {
-        let summary = NetWorthCalculator.headline(series)
+    private func headline(window: [NetWorthPoint]) -> some View {
+        let selected = selectedDay.flatMap { day in window.first { $0.day == day } }
+        let shown = selected ?? series.last
 
         VStack(alignment: .leading, spacing: 6) {
-            Text(selectedDay == nil ? "Today" : "On \(selectedPointDayText)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Group {
+                if let selected {
+                    Text("On \(dayText(selected.day))")
+                } else {
+                    Text("Today")
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
 
-            Text(headlineAmountText(summary))
+            Text(shown?.total.map { MoneyFormatting.string($0, code: settings.baseCurrency) } ?? "—")
                 .font(.system(size: 36, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .contentTransition(.numericText())
 
-            if selectedDay == nil, let change = summary?.change {
-                Label {
-                    Text(MoneyFormatting.signedChange(change, code: settings.baseCurrency))
-                } icon: {
-                    Image(systemName: change < 0 ? "arrow.down.right" : "arrow.up.right")
+            if window.count > 1, let start = window.first, let startTotal = start.total, let shownTotal = shown?.total {
+                let change = NetWorthCalculator.change(from: startTotal, to: shownTotal)
+                HStack(spacing: 4) {
+                    Image(systemName: change.amount < 0 ? "arrow.down.right" : "arrow.up.right")
+                        .accessibilityHidden(true)
+                    Text(verbatim: changeText(change))
+                        .monospacedDigit()
+                    Text("since \(dayText(start.day))")
+                        .foregroundStyle(.secondary)
                 }
                 .font(.subheadline)
-                .foregroundStyle(change < 0 ? .red : .green)
+                .foregroundStyle(change.amount < 0 ? .red : .green)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var selectedPointDayText: String {
-        guard let selectedDay else { return "" }
-        return selectedDay.date().formatted(.dateTime.day().month(.abbreviated).year())
+    private func dayText(_ day: CalendarDay) -> String {
+        day.date().formatted(.dateTime.day().month(.abbreviated).year())
     }
 
-    private func headlineAmountText(_ summary: (current: NetWorthPoint, change: Decimal?)?) -> String {
-        let point = selectedDay.flatMap { day in series.first { $0.day == day } } ?? summary?.current
-        guard let total = point?.total else { return "—" }
-        return MoneyFormatting.string(total, code: settings.baseCurrency)
+    private func changeText(_ change: (amount: Decimal, fraction: Decimal?)) -> String {
+        let amount = MoneyFormatting.signedChange(change.amount, code: settings.baseCurrency)
+        guard let fraction = change.fraction else { return amount }
+        return "\(amount) (\(MoneyFormatting.percent(fraction)))"
     }
 
     @ViewBuilder
-    private var chart: some View {
+    private func chart(window: [NetWorthPoint], range: ChartRange) -> some View {
         switch mode {
         case .total:
-            NetWorthChart(points: plottable, baseCurrency: settings.baseCurrency, selectedDay: $selectedDay)
+            NetWorthChart(points: window, selectedDay: $selectedDay)
         case .byType:
-            BreakdownChart(points: plottable, baseCurrency: settings.baseCurrency, selectedDay: $selectedDay)
+            BreakdownChart(points: window, baseCurrency: settings.baseCurrency, selectedDay: $selectedDay)
         case .perAccount:
             AccountDrilldownChart(
                 accounts: accounts,
                 selectedAccountID: $drilldownAccountID,
                 rates: rates.table,
-                baseCurrency: settings.baseCurrency
+                baseCurrency: settings.baseCurrency,
+                range: range
             )
         }
     }

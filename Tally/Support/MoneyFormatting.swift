@@ -34,6 +34,11 @@ enum MoneyFormatting {
         return formatted
     }
 
+    /// A change as a share, unsigned, to sit beside `signedChange`: 4.2%.
+    static func percent(_ fraction: Decimal, locale: Locale = .current) -> String {
+        abs(fraction).formatted(.percent.locale(locale).precision(.fractionLength(1)))
+    }
+
     /// What an amount field is pre-filled with: no symbol, the locale's
     /// grouping, and its decimal separator, so `parse` reads back exactly this
     /// amount. `"\(amount)"` would not survive a round trip in a locale such as

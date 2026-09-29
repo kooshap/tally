@@ -4,64 +4,15 @@ import SwiftUI
 /// Mode 1: total net worth as a line.
 struct NetWorthChart: View {
     let points: [NetWorthPoint]
-    let baseCurrency: String
     @Binding var selectedDay: CalendarDay?
 
-    @State private var selectedDate: Date?
-
     var body: some View {
-        Chart(points) { point in
-            LineMark(
-                x: .value("Date", point.day.date()),
-                y: .value("Net worth", (point.total ?? 0).plotted)
-            )
-            .interpolationMethod(.monotone)
-
-            AreaMark(
-                x: .value("Date", point.day.date()),
-                y: .value("Net worth", (point.total ?? 0).plotted)
-            )
-            .interpolationMethod(.monotone)
-            .foregroundStyle(
-                .linearGradient(
-                    colors: [.accentColor.opacity(0.28), .accentColor.opacity(0.02)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-
-            if let marked = selectedDate.flatMap(nearest(to:)) {
-                RuleMark(x: .value("Selected", marked.day.date()))
-                    .foregroundStyle(.secondary.opacity(0.4))
-                PointMark(
-                    x: .value("Date", marked.day.date()),
-                    y: .value("Net worth", (marked.total ?? 0).plotted)
-                )
-            }
-        }
-        .chartXSelection(value: $selectedDate)
-        .chartYAxis {
-            AxisMarks { value in
-                AxisGridLine()
-                AxisValueLabel {
-                    if let amount = value.as(Double.self) {
-                        Text(MoneyFormatting.compact(Decimal(amount), code: baseCurrency))
-                    }
-                }
-            }
-        }
-        .frame(height: 240)
-        .onChange(of: selectedDate) { _, date in
-            selectedDay = date.flatMap { nearest(to: $0)?.day }
-        }
-    }
-
-    /// Selection lands on an arbitrary x; snap it to the nearest real point so
-    /// the readout always shows a day that actually has data.
-    private func nearest(to date: Date) -> NetWorthPoint? {
-        points.min {
-            abs($0.day.date().timeIntervalSince(date)) < abs($1.day.date().timeIntervalSince(date))
-        }
+        TrendLineChart(
+            samples: points.compactMap { point in
+                point.total.map { TrendLineChart.Sample(day: point.day, amount: $0) }
+            },
+            selectedDay: $selectedDay
+        )
     }
 }
 
@@ -95,13 +46,21 @@ struct BreakdownChart: View {
     }
 
     var body: some View {
-        Chart(slices) { slice in
-            AreaMark(
-                x: .value("Date", slice.date),
-                y: .value("Value", slice.amount)
-            )
-            .foregroundStyle(by: .value("Type", slice.typeName))
-            .interpolationMethod(.monotone)
+        Chart {
+            ForEach(slices) { slice in
+                AreaMark(
+                    x: .value("Date", slice.date),
+                    y: .value("Value", slice.amount)
+                )
+                .foregroundStyle(by: .value("Type", slice.typeName))
+                .interpolationMethod(.monotone)
+            }
+
+            if let selectedDay {
+                RuleMark(x: .value("Selected", selectedDay.date()))
+                    .foregroundStyle(Color.secondary)
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+            }
         }
         .chartXSelection(value: $selectedDate)
         .chartLegend(position: .bottom)
@@ -126,5 +85,6 @@ struct BreakdownChart: View {
                     abs($0.day.date().timeIntervalSince(date)) < abs($1.day.date().timeIntervalSince(date))
                 }?.day
         }
+        .sensoryFeedback(.selection, trigger: selectedDay) { _, day in day != nil }
     }
 }

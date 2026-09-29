@@ -137,13 +137,11 @@ enum NetWorthCalculator {
         )
     }
 
-    /// The headline figure and its movement since the previous point.
-    static func headline(_ series: [NetWorthPoint]) -> (current: NetWorthPoint, change: Decimal?)? {
-        guard let current = series.last else { return nil }
-        let previous = series.dropLast().last
-        guard let now = current.total, let before = previous?.total else {
-            return (current, nil)
-        }
-        return (current, now - before)
+    /// The headline's movement from the start of the chart's range to `end`.
+    /// The fraction is left out unless `start` is positive: from a negative net
+    /// worth a percentage reads backwards, and from zero it has no value.
+    static func change(from start: Decimal, to end: Decimal) -> (amount: Decimal, fraction: Decimal?) {
+        let amount = end - start
+        return (amount, start > 0 ? amount / start : nil)
     }
 }

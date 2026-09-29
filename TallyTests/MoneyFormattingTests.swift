@@ -39,6 +39,15 @@ final class MoneyFormattingTests: XCTestCase {
         XCTAssertEqual(MoneyFormatting.editableString(1_234_567, locale: german), "1.234.567")
     }
 
+    // MARK: - Change as a share
+
+    /// The sign is carried by the amount beside it, so the share leaves it off.
+    func testPercentIsUnsignedToOneDecimal() {
+        XCTAssertEqual(MoneyFormatting.percent(Decimal(string: "0.0423")!, locale: american), "4.2%")
+        XCTAssertEqual(MoneyFormatting.percent(Decimal(string: "-0.2")!, locale: american), "20.0%")
+        XCTAssertEqual(MoneyFormatting.percent(Decimal(string: "0.0423")!, locale: german), "4,2\u{A0}%")
+    }
+
     // MARK: - Grouping while typing
 
     private func regrouped(_ text: String, caret: Int? = nil, locale: Locale) -> (text: String, caret: Int) {
