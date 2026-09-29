@@ -27,7 +27,7 @@ struct BreakdownChart: View {
     private struct Slice: Identifiable {
         let id: String
         let date: Date
-        let typeName: String
+        let type: AccountType
         let amount: Double
     }
 
@@ -38,21 +38,30 @@ struct BreakdownChart: View {
                 return Slice(
                     id: "\(point.day.rawValue)-\(type.rawValue)",
                     date: point.day.date(),
-                    typeName: type.localizedName,
+                    type: type,
                     amount: amount.plotted
                 )
             }
         }
     }
 
+    /// The types on the chart, in the fixed order, so each keeps its colour
+    /// and the legend lists only what is drawn.
+    private func shownTypes(in slices: [Slice]) -> [AccountType] {
+        let present = Set(slices.map(\.type))
+        return AccountType.allCases.filter(present.contains)
+    }
+
     var body: some View {
+        let slices = slices
+        let shownTypes = shownTypes(in: slices)
         Chart {
             ForEach(slices) { slice in
                 AreaMark(
                     x: .value("Date", slice.date),
                     y: .value("Value", slice.amount)
                 )
-                .foregroundStyle(by: .value("Type", slice.typeName))
+                .foregroundStyle(by: .value("Type", slice.type.localizedName))
                 .interpolationMethod(.monotone)
             }
 
@@ -63,6 +72,10 @@ struct BreakdownChart: View {
             }
         }
         .chartXSelection(value: $selectedDate)
+        .chartForegroundStyleScale(
+            domain: shownTypes.map(\.localizedName),
+            range: shownTypes.map(\.chartColor)
+        )
         .chartLegend(position: .bottom)
         .chartYAxis {
             AxisMarks { value in
@@ -86,5 +99,18 @@ struct BreakdownChart: View {
                 }?.day
         }
         .sensoryFeedback(.selection, trigger: selectedDay) { _, day in day != nil }
+    }
+}
+
+extension AccountType {
+    /// Fixed per type, so a type keeps its colour whichever others are on the
+    /// chart. Debt is red, as money owed.
+    fileprivate var chartColor: Color {
+        switch self {
+        case .bank: return .blue
+        case .broker: return .purple
+        case .realEstate: return .orange
+        case .debt: return .red
+        }
     }
 }
