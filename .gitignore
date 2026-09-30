@@ -20,8 +20,9 @@ xcuserdata/
 .swiftpm/
 Packages/
 
-# Screenshots/capture writes these; they are rebuilt from code
+# Screenshots/capture and Screenshots/frame write these; they are rebuilt from code
 Screenshots/Output/
+Screenshots/Framed/
 
 # Tools BuildTools/tool downloads
 BuildTools/.bin/

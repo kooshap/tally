@@ -1,0 +1,134 @@
+#!/usr/bin/env swift
+// Frames the screenshots Screenshots/capture took: each goes on the logo's
+// navy under its caption from Screenshots/captions.json, in a drawn iPhone
+// outline that runs off the bottom edge. Writes the images to upload to
+// Screenshots/Framed/<language>/.
+//
+//   Screenshots/frame
+//
+// Opaque RGB PNGs at the size they were captured (1320 x 2868), which is
+// what App Store Connect accepts: it rejects images with an alpha channel.
+
+import AppKit
+import SwiftUI
+
+struct Caption: Decodable {
+    let screen: String
+    let headline: String
+    let highlight: String
+    let subline: String
+}
+
+let root = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent()
+let input = root.appending(path: "Output")
+let output = root.appending(path: "Framed")
+
+let navy = Color(red: 0x26 / 255, green: 0x21 / 255, blue: 0x5C / 255)
+let gold = Color(red: 0xFA / 255, green: 0xC7 / 255, blue: 0x75 / 255)
+
+struct Framed: View {
+    let caption: Caption
+    let screenshot: NSImage
+    let size: CGSize
+
+    /// The screen's share of the canvas width, and its corner radius, which
+    /// follows the iPhone's own at that scale.
+    private let screenWidthShare = 0.84
+    private var screenSize: CGSize {
+        let width = size.width * screenWidthShare
+        return CGSize(width: width, height: width * size.height / size.width)
+    }
+    private var cornerRadius: CGFloat { screenSize.width * 0.125 }
+    private let bezel: CGFloat = 26
+
+    private var headline: AttributedString {
+        var text = AttributedString(caption.headline)
+        text.foregroundColor = .white
+        if let range = text.range(of: caption.highlight) {
+            text[range].foregroundColor = gold
+        }
+        return text
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 36) {
+                Text(headline)
+                    .font(.system(size: 104, weight: .bold, design: .rounded))
+                    .lineSpacing(4)
+                Text(caption.subline)
+                    .font(.system(size: 52, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.78))
+            }
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 90)
+            .frame(height: 640)
+            .padding(.top, 60)
+
+            Image(nsImage: screenshot)
+                .resizable()
+                .frame(width: screenSize.width, height: screenSize.height)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .padding(bezel)
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius + bezel, style: .continuous)
+                        .fill(Color(white: 0.06))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius + bezel, style: .continuous)
+                        .strokeBorder(.white.opacity(0.22), lineWidth: 4)
+                )
+                .shadow(color: .black.opacity(0.35), radius: 40, y: 20)
+
+            Spacer(minLength: 0)
+        }
+        .frame(width: size.width, height: size.height, alignment: .top)
+        .background(navy)
+    }
+}
+
+/// Redrawn without alpha, then written as PNG.
+@MainActor
+func writeOpaquePNG(_ image: CGImage, to url: URL) throws {
+    guard
+        let context = CGContext(
+            data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+    else { throw CocoaError(.fileWriteUnknown) }
+    context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+    guard let opaque = context.makeImage() else { throw CocoaError(.fileWriteUnknown) }
+    let data = NSBitmapImageRep(cgImage: opaque).representation(using: .png, properties: [:])
+    try data?.write(to: url)
+}
+
+@MainActor
+func run() throws {
+    let captions = try JSONDecoder().decode(
+        [String: [Caption]].self, from: Data(contentsOf: root.appending(path: "captions.json")))
+    try? FileManager.default.removeItem(at: output)
+    var written = 0
+
+    for (language, list) in captions.sorted(by: { $0.key < $1.key }) {
+        let folder = output.appending(path: language)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        for caption in list {
+            let source = input.appending(path: "\(language)/\(caption.screen).png")
+            guard let screenshot = NSImage(contentsOf: source),
+                let pixels = screenshot.representations.first
+            else {
+                FileHandle.standardError.write(Data("Missing \(source.path) — run Screenshots/capture first\n".utf8))
+                exit(1)
+            }
+            let size = CGSize(width: pixels.pixelsWide, height: pixels.pixelsHigh)
+            let renderer = ImageRenderer(content: Framed(caption: caption, screenshot: screenshot, size: size))
+            renderer.scale = 1
+            guard let image = renderer.cgImage else { throw CocoaError(.fileWriteUnknown) }
+            try writeOpaquePNG(image, to: folder.appending(path: "\(caption.screen).png"))
+            written += 1
+        }
+    }
+    print("Wrote \(written) framed screenshots to \(output.path)/")
+}
+
+try MainActor.assumeIsolated { try run() }

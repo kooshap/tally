@@ -173,6 +173,17 @@ those days. The figures are fixed, so every run draws the same charts, and
 `ScreenshotPortfolioTests` fails if a gap in the rates would put the
 missing-rates banner on screen.
 
+```sh
+Screenshots/frame
+```
+
+then puts each one on the logo's navy, in a drawn iPhone outline, under its
+caption from `Screenshots/captions.json`, and writes what gets uploaded to
+`Screenshots/Framed/`: opaque PNGs, since App Store Connect rejects an alpha
+channel. The captions lead with privacy, and claim only what the app does:
+it works offline, but it does download exchange rates, so it isn't "fully
+offline".
+
 ## Code style
 
 `swift-format` owns layout (`.swift-format`: 4 spaces, 120 columns) and

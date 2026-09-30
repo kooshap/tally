@@ -1,0 +1,78 @@
+{
+  "en": [
+    {
+      "screen": "01-net-worth",
+      "headline": "Your net worth, only on your iPhone",
+      "highlight": "only on your iPhone",
+      "subline": "No account. No cloud. No tracking."
+    },
+    {
+      "screen": "02-accounts",
+      "headline": "Every account, any currency",
+      "highlight": "any currency",
+      "subline": "Stored on your iPhone, never on a server"
+    },
+    {
+      "screen": "03-update-all",
+      "headline": "Two minutes a month",
+      "highlight": "Two minutes",
+      "subline": "No bank logins. You type, Tally does the math."
+    },
+    {
+      "screen": "04-by-type",
+      "headline": "See what it's made of",
+      "highlight": "made of",
+      "subline": "Nothing you enter ever leaves your iPhone"
+    },
+    {
+      "screen": "05-per-account",
+      "headline": "Each account in its own currency",
+      "highlight": "its own currency",
+      "subline": "Works offline, on the last rates it saved"
+    },
+    {
+      "screen": "06-privacy",
+      "headline": "Data Not Collected. Ever.",
+      "highlight": "Ever.",
+      "subline": "No servers, no analytics, no crash reports"
+    }
+  ],
+  "de": [
+    {
+      "screen": "01-net-worth",
+      "headline": "Dein Vermögen, nur auf deinem iPhone",
+      "highlight": "nur auf deinem iPhone",
+      "subline": "Kein Konto. Keine Cloud. Kein Tracking."
+    },
+    {
+      "screen": "02-accounts",
+      "headline": "Alle Konten, jede Währung",
+      "highlight": "jede Währung",
+      "subline": "Gespeichert auf deinem iPhone, nie auf einem Server"
+    },
+    {
+      "screen": "03-update-all",
+      "headline": "Zwei Minuten im Monat",
+      "highlight": "Zwei Minuten",
+      "subline": "Kein Bank-Login. Du tippst, Tally rechnet."
+    },
+    {
+      "screen": "04-by-type",
+      "headline": "Sieh, woraus dein Vermögen besteht",
+      "highlight": "woraus",
+      "subline": "Was du eingibst, verlässt nie dein iPhone"
+    },
+    {
+      "screen": "05-per-account",
+      "headline": "Jedes Konto in seiner Währung",
+      "highlight": "seiner Währung",
+      "subline": "Funktioniert offline, mit den zuletzt geladenen Kursen"
+    },
+    {
+      "screen": "06-privacy",
+      "headline": "Keine Daten erfasst. Nie.",
+      "highlight": "Nie.",
+      "subline": "Keine Server, keine Analyse, keine Absturzberichte"
+    }
+  ]
+}
