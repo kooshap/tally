@@ -3,12 +3,38 @@ import Foundation
 /// Display only. Every calculation stays in `Decimal`; these helpers are the
 /// last step before text.
 enum MoneyFormatting {
+    /// A round amount without cents, anything else with all of them: €405,000
+    /// and €5,728.50, never €5,728.5. "Cents" is the currency's minor unit, so
+    /// a currency without one, such as JPY, never shows decimals.
     static func string(_ amount: Decimal, code: String, locale: Locale = .current) -> String {
-        amount.formatted(
+        let minorDigits = minorUnitDigits(code, locale: locale)
+        // Rounded here, not by the formatter, so 5,728.001 reads as €5,728 and
+        // not €5,728.00.
+        var exact = amount
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &exact, minorDigits, .plain)
+        return rounded.formatted(
             .currency(code: code)
                 .locale(locale)
-                .precision(.fractionLength(0...2))
+                .precision(.fractionLength(isWhole(rounded) ? 0 : minorDigits))
         )
+    }
+
+    /// How many decimals the currency is written with: 2 for EUR and USD; 0
+    /// for JPY and KRW, and for HUF and IDR, whose minor units are out of use.
+    private static func minorUnitDigits(_ code: String, locale: Locale) -> Int {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = locale
+        formatter.currencyCode = code
+        return formatter.maximumFractionDigits
+    }
+
+    private static func isWhole(_ amount: Decimal) -> Bool {
+        var amount = amount
+        var whole = Decimal()
+        NSDecimalRound(&whole, &amount, 0, .plain)
+        return whole == amount
     }
 
     /// Compact form for chart axes: 1.2M, 340k.
@@ -54,10 +80,7 @@ enum MoneyFormatting {
     /// How many decimals `step` needs to be written exactly, up to three.
     private static func fractionDigits(_ step: Decimal) -> Int {
         (0...3).first { digits in
-            var scaled = step * Decimal(sign: .plus, exponent: digits, significand: 1)
-            var whole = Decimal()
-            NSDecimalRound(&whole, &scaled, 0, .plain)
-            return whole == scaled
+            isWhole(step * Decimal(sign: .plus, exponent: digits, significand: 1))
         } ?? 3
     }
 

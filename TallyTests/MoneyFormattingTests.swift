@@ -160,10 +160,33 @@ final class MoneyFormattingTests: XCTestCase {
 
     // MARK: - Display
 
-    func testStringShowsUpToTwoDecimals() {
-        XCTAssertEqual(MoneyFormatting.string(1_234, code: "USD", locale: american), "$1,234")
-        XCTAssertEqual(MoneyFormatting.string(Decimal(string: "1234.5")!, code: "USD", locale: american), "$1,234.5")
-        XCTAssertEqual(MoneyFormatting.string(Decimal(string: "1234.567")!, code: "USD", locale: american), "$1,234.57")
+    private func string(_ amount: String, _ code: String, _ locale: Locale) -> String {
+        MoneyFormatting.string(Decimal(string: amount)!, code: code, locale: locale)
+    }
+
+    /// Nobody writes money as €5,728.5.
+    func testStringShowsCentsInFull() {
+        XCTAssertEqual(string("5728.5", "EUR", american), "€5,728.50")
+        XCTAssertEqual(string("5728.5", "EUR", german), "5.728,50\u{A0}€")
+        XCTAssertEqual(string("5728.55", "EUR", american), "€5,728.55")
+        XCTAssertEqual(string("5728.55", "EUR", german), "5.728,55\u{A0}€")
+        XCTAssertEqual(string("-5728.5", "EUR", american), "-€5,728.50")
+        XCTAssertEqual(string("1234.567", "USD", american), "$1,234.57")
+    }
+
+    /// Round balances are shown without cents, deliberately.
+    func testStringLeavesCentsOffARoundAmount() {
+        XCTAssertEqual(string("405000", "EUR", american), "€405,000")
+        XCTAssertEqual(string("405000", "EUR", german), "405.000\u{A0}€")
+        XCTAssertEqual(string("5728.001", "EUR", american), "€5,728", "what rounds to a whole amount is one")
+    }
+
+    /// A currency without a minor unit never shows decimals.
+    func testStringShowsNoDecimalsForJapaneseYen() {
+        XCTAssertEqual(string("1234567", "JPY", american), "¥1,234,567")
+        XCTAssertEqual(string("1234567", "JPY", german), "1.234.567\u{A0}¥")
+        XCTAssertEqual(string("1234567.5", "JPY", american), "¥1,234,568")
+        XCTAssertEqual(string("1234567.5", "JPY", german), "1.234.568\u{A0}¥")
     }
 
     func testCompactAbbreviatesLargeFiguresForChartAxes() {

@@ -16,6 +16,7 @@ A private, local-first iOS app for tracking personal net worth. The user updates
 - SwiftUI, SwiftData, Swift Charts, LocalAuthentication.
 - Swift Concurrency; no third-party packages.
 - Localization: English and German, using a String Catalog. Numbers, dates, and currencies are formatted by locale.
+- Amounts show the currency's minor unit in full or not at all: €5,728.50 and €405,000, never €5,728.5. Round amounts deliberately show no cents; a currency without a minor unit in use (JPY, KRW, ISK, HUF, IDR) never shows decimals.
 - All money math uses `Decimal`, never `Double`.
 
 ## 3. Domain
