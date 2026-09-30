@@ -98,7 +98,7 @@ A private, local-first iOS app for tracking personal net worth. The user updates
   2. Breakdown by type (stacked area; debt shown as negative).
   3. Per-account drill-down (the line for one account, in its own currency with a toggle for base currency).
 - Range buttons (6M, 1Y, All) limit every chart mode to recent history. A range is offered only when it holds at least two points and leaves some out.
-- The line charts use a fitted scale with no axes, green when the range ended better than it began and red when worse (for a debt, falling is better).
+- The line charts use a fitted scale, with dates along the bottom and amounts up the side, green when the range ended better than it began and red when worse (for a debt, falling is better).
 - Tapping or dragging on the chart shows the value on a given date: the headline (or the account readout in mode 3) shows that day's figure and change, the line fades after the finger, and each point gives a haptic tick.
 
 ### Security

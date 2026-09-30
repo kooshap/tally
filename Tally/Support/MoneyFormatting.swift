@@ -26,6 +26,41 @@ enum MoneyFormatting {
         return "\(formatted) \(code)"
     }
 
+    /// Labels for an amount axis, one per tick: all in the same unit, with as
+    /// many decimals as the step needs so no two read alike. 280k EUR and
+    /// 282.5k EUR; 1.2M EUR; or €3,500 for an axis that stays small.
+    static func axisLabels(_ ticks: AxisTicks, code: String, locale: Locale = .current) -> [String] {
+        let largest = ticks.values.map { abs($0) }.max() ?? 0
+        let unit: (divisor: Decimal, suffix: String)
+        if largest >= 1_000_000, ticks.step >= 100_000 {
+            unit = (1_000_000, "M")
+        } else if largest >= 10_000, ticks.step >= 100 {
+            unit = (1_000, "k")
+        } else {
+            let digits = fractionDigits(ticks.step)
+            return ticks.values.map {
+                $0.formatted(.currency(code: code).locale(locale).precision(.fractionLength(digits)))
+            }
+        }
+
+        let digits = fractionDigits(ticks.step / unit.divisor)
+        return ticks.values.map { value in
+            guard value != 0 else { return "0 \(code)" }
+            let number = (value / unit.divisor).formatted(.number.locale(locale).precision(.fractionLength(digits)))
+            return "\(number)\(unit.suffix) \(code)"
+        }
+    }
+
+    /// How many decimals `step` needs to be written exactly, up to three.
+    private static func fractionDigits(_ step: Decimal) -> Int {
+        (0...3).first { digits in
+            var scaled = step * Decimal(sign: .plus, exponent: digits, significand: 1)
+            var whole = Decimal()
+            NSDecimalRound(&whole, &scaled, 0, .plain)
+            return whole == scaled
+        } ?? 3
+    }
+
     /// A signed change, always carrying its sign so a rise reads unambiguously.
     static func signedChange(_ amount: Decimal, code: String, locale: Locale = .current) -> String {
         let formatted = string(abs(amount), code: code, locale: locale)

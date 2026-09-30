@@ -3,9 +3,9 @@ import SwiftUI
 
 /// A line in the style of a stock app, for the total and for one account.
 ///
-/// There are no axes, and the scale is fitted to the values rather than
-/// starting at zero, so a month's movement shows instead of being squeezed
-/// into the top of the chart. The line is green when the range ended better
+/// The scale is fitted to the values rather than starting at zero, so a
+/// month's movement shows instead of being squeezed into the top of the chart;
+/// the axes say which dates and amounts that is. The line is green when the range ended better
 /// than it began and red when it ended worse. Dragging marks the day under the
 /// finger, fades the line after it, and gives a haptic tick on each day with a
 /// balance. The caller shows the selected day's figures.
@@ -19,6 +19,8 @@ struct TrendLineChart: View {
 
     /// Oldest first.
     let samples: [Sample]
+    /// What the amounts are in, for the axis labels.
+    let currencyCode: String
     /// False for a debt, where a falling line is the good news.
     var upIsGood = true
     @Binding var selectedDay: CalendarDay?
@@ -45,6 +47,8 @@ struct TrendLineChart: View {
 
     var body: some View {
         let yDomain = yDomain
+        let ticks = AxisTicks(from: Decimal(yDomain.lowerBound), to: Decimal(yDomain.upperBound))
+        let labels = MoneyFormatting.axisLabels(ticks, code: currencyCode)
         Chart {
             ForEach(samples) { sample in
                 AreaMark(
@@ -96,8 +100,22 @@ struct TrendLineChart: View {
                 }
             }
         }
-        .chartXAxis(.hidden)
-        .chartYAxis(.hidden)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                AxisGridLine()
+                AxisValueLabel()
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: ticks.values.map(\.plotted)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if labels.indices.contains(value.index) {
+                        Text(verbatim: labels[value.index])
+                    }
+                }
+            }
+        }
         .chartYScale(domain: yDomain)
         .chartXScale(domain: xDomain)
         .chartXSelection(value: $selectedDate)

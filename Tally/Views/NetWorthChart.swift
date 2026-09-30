@@ -4,6 +4,7 @@ import SwiftUI
 /// Mode 1: total net worth as a line.
 struct NetWorthChart: View {
     let points: [NetWorthPoint]
+    let baseCurrency: String
     @Binding var selectedDay: CalendarDay?
 
     var body: some View {
@@ -11,6 +12,7 @@ struct NetWorthChart: View {
             samples: points.compactMap { point in
                 point.total.map { TrendLineChart.Sample(day: point.day, amount: $0) }
             },
+            currencyCode: baseCurrency,
             selectedDay: $selectedDay
         )
     }

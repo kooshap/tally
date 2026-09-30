@@ -170,7 +170,7 @@ private struct DashboardContent: View {
     private func chart(window: [NetWorthPoint], range: ChartRange) -> some View {
         switch mode {
         case .total:
-            NetWorthChart(points: window, selectedDay: $selectedDay)
+            NetWorthChart(points: window, baseCurrency: settings.baseCurrency, selectedDay: $selectedDay)
         case .byType:
             BreakdownChart(points: window, baseCurrency: settings.baseCurrency, selectedDay: $selectedDay)
         case .perAccount:

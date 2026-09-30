@@ -71,6 +71,7 @@ struct AccountDrilldownChart: View {
 
                 TrendLineChart(
                     samples: samples,
+                    currencyCode: displayCurrency,
                     upIsGood: selectedAccount?.type.isLiability != true,
                     selectedDay: $selectedDay
                 )
