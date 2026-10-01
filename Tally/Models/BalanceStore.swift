@@ -11,6 +11,11 @@ enum BalanceStore {
         return earliest...max(earliest, now)
     }
 
+    /// The same range as calendar days, for checking an imported balance.
+    static func allowedDays(today: CalendarDay = .today()) -> ClosedRange<CalendarDay> {
+        RateStore.earliestDay...max(RateStore.earliestDay, today)
+    }
+
     /// Records `amount` for `account` on `day`, replacing that day's entry if
     /// one already exists. This is the "at most one entry per account per day"
     /// rule: a second edit on the same day overwrites rather than adding a

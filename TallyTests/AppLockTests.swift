@@ -109,6 +109,36 @@ final class AppLockTests: XCTestCase {
         XCTAssertTrue(device.reasons.isEmpty, "no prompt is shown")
     }
 
+    // MARK: - Confirming before an export
+
+    func testConfirmingTheOwnerAsksOnceAndLeavesTheLockAlone() async {
+        let confirmed = await lock.confirmOwner(reason: "Export")
+
+        XCTAssertTrue(confirmed)
+        XCTAssertEqual(device.policies, [.deviceOwnerAuthentication])
+        XCTAssertEqual(device.reasons, ["Export"])
+        XCTAssertTrue(lock.isLocked(enabled: true), "confirming isn't unlocking")
+    }
+
+    func testACancelledConfirmationRefuses() async {
+        lock.unlockWithoutAuthenticating()
+        device.outcome = .failure(LAError(.userCancel))
+
+        let confirmed = await lock.confirmOwner(reason: "Export")
+
+        XCTAssertFalse(confirmed)
+        XCTAssertFalse(lock.isLocked(enabled: true), "a refused export doesn't lock the app")
+    }
+
+    func testAPhoneWithNoPasscodeHasNothingToConfirm() async {
+        device.hasPasscode = false
+
+        let confirmed = await lock.confirmOwner(reason: "Export")
+
+        XCTAssertTrue(confirmed)
+        XCTAssertTrue(device.reasons.isEmpty, "no prompt is shown")
+    }
+
     // MARK: - Leaving the app
 
     func testGoingToTheBackgroundRelocks() {

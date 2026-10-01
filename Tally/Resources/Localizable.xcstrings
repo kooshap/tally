@@ -1358,6 +1358,391 @@
     "ecb.europa.eu": {
       "extractionState": "manual",
       "shouldTranslate": false
+    },
+    "Backup file": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup-Datei"
+          }
+        }
+      }
+    },
+    "Export backup": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup exportieren"
+          }
+        }
+      }
+    },
+    "Import backup": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup importieren"
+          }
+        }
+      }
+    },
+    "A CSV file of your accounts and balances, to keep in Files or move to a new iPhone. It isn't encrypted, so keep it somewhere private.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine CSV-Datei mit deinen Konten und Kontoständen, zum Aufbewahren in der Dateien-App oder für den Umzug auf ein neues iPhone. Sie ist nicht verschlüsselt, bewahre sie also an einem privaten Ort auf."
+          }
+        }
+      }
+    },
+    "Import backup?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup importieren?"
+          }
+        }
+      }
+    },
+    "Import": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importieren"
+          }
+        }
+      }
+    },
+    "Already up to date": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereits auf dem neusten Stand"
+          }
+        }
+      }
+    },
+    "Every account and balance in this file is already on this iPhone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Konten und Kontostände aus dieser Datei sind bereits auf diesem iPhone."
+          }
+        }
+      }
+    },
+    "Couldn't import": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import nicht möglich"
+          }
+        }
+      }
+    },
+    "Couldn't export": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export nicht möglich"
+          }
+        }
+      }
+    },
+    "The backup file wasn't saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Backup-Datei wurde nicht gespeichert."
+          }
+        }
+      }
+    },
+    "And %lld more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Und %lld weitere."
+          }
+        }
+      }
+    },
+    "Nothing was changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es wurde nichts geändert."
+          }
+        }
+      }
+    },
+    "Confirm it's you to export your balances.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestätige, dass du es bist, um deine Kontostände zu exportieren."
+          }
+        }
+      }
+    },
+    "Accounts to add: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Konten: %lld"
+          }
+        }
+      }
+    },
+    "Balances to add: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Kontostände: %lld"
+          }
+        }
+      }
+    },
+    "Balances to replace: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu ersetzende Kontostände: %lld"
+          }
+        }
+      }
+    },
+    "Tally couldn't open this file.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tally konnte diese Datei nicht öffnen."
+          }
+        }
+      }
+    },
+    "This file is too large to be a Tally backup.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Datei ist zu gross für ein Tally-Backup."
+          }
+        }
+      }
+    },
+    "This isn't a Tally backup file.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist keine Tally-Backup-Datei."
+          }
+        }
+      }
+    },
+    "Line %lld: a quoted value is never closed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Ein Wert in Anführungszeichen wird nie geschlossen."
+          }
+        }
+      }
+    },
+    "Line %lld: the number of values doesn't match the header.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Die Anzahl Werte passt nicht zur Kopfzeile."
+          }
+        }
+      }
+    },
+    "Line %lld: the account ID isn't valid.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Die Konto-ID ist ungültig."
+          }
+        }
+      }
+    },
+    "Line %lld: the account name is empty.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Der Kontoname ist leer."
+          }
+        }
+      }
+    },
+    "Line %lld: “%@” isn't an account type.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: «%@» ist keine Kontoart."
+          }
+        }
+      }
+    },
+    "Line %lld: Tally doesn't offer the currency “%@”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Tally bietet die Währung «%@» nicht an."
+          }
+        }
+      }
+    },
+    "Line %lld: the sort order “%@” isn't a whole number.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Die Reihenfolge «%@» ist keine ganze Zahl."
+          }
+        }
+      }
+    },
+    "Line %lld: “%@” isn't a date in the form 2025-01-31.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: «%@» ist kein Datum der Form 2025-01-31."
+          }
+        }
+      }
+    },
+    "Line %lld: %@ is before 2015 or in the future.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: %@ liegt vor 2015 oder in der Zukunft."
+          }
+        }
+      }
+    },
+    "Line %lld: “%@” isn't an amount in the form -1234.56.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: «%@» ist kein Betrag der Form -1234.56."
+          }
+        }
+      }
+    },
+    "Line %lld: only a bank account can have a negative balance.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Nur ein Bankkonto kann negativ sein."
+          }
+        }
+      }
+    },
+    "Line %lld: a balance needs both a date and an amount.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Ein Kontostand braucht ein Datum und einen Betrag."
+          }
+        }
+      }
+    },
+    "Line %lld: the account already has a balance on this day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Das Konto hat an diesem Tag bereits einen Kontostand."
+          }
+        }
+      }
+    },
+    "Line %lld: the account's details differ from line %lld.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: Die Kontoangaben weichen von Zeile %lld ab."
+          }
+        }
+      }
+    },
+    "Line %lld: “%@” has a different currency or type on this iPhone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeile %lld: «%@» hat auf diesem iPhone eine andere Währung oder Art."
+          }
+        }
+      }
     }
   }
 }

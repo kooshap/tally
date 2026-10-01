@@ -38,6 +38,9 @@ final class GermanLocalizationUITests: XCTestCase {
         app.tabBars.buttons["Einstellungen"].tap()
         XCTAssertTrue(app.navigationBars["Einstellungen"].waitForExistence(timeout: 5))
         try assertNoEnglishFallback(on: "settings")
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["Backup exportieren"].waitForExistence(timeout: 5))
+        try assertNoEnglishFallback(on: "settings, backup")
 
         app.tabBars.buttons["Konten"].tap()
         XCTAssertTrue(app.buttons["Alle Kontostände aktualisieren"].waitForExistence(timeout: 5))

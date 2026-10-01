@@ -78,6 +78,17 @@ final class AppLock {
         }
     }
 
+    /// Asks for Face ID or the passcode once, leaving the lock as it is: for
+    /// handing data out of the app, so a phone passed over unlocked can't be
+    /// used to take a copy. With no passcode on the device there is nothing to
+    /// ask, as when unlocking.
+    func confirmOwner(reason: String) async -> Bool {
+        let context = makeContext()
+        context.localizedFallbackTitle = ""
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil) else { return true }
+        return (try? await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)) ?? false
+    }
+
     /// Whether the device can gate at all, for the Settings toggle.
     static var isAvailable: Bool {
         LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)

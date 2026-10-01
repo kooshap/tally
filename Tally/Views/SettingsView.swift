@@ -67,6 +67,8 @@ struct SettingsView: View {
                     .disabled(rates.status == .refreshing)
                 }
 
+                BackupSection()
+
                 Section {
                     NavigationLink("About Tally") { AboutView() }
                 }

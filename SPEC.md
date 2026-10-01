@@ -108,8 +108,31 @@ A private, local-first iOS app for tracking personal net worth. The user updates
 - Add an `NSFaceIDUsageDescription`.
 - When the lock is enabled, blur the app in the app switcher.
 
+### Backup file
+For keeping a copy of the data in Files and moving it to a new iPhone. Tally reads only files in its own format; files from banks or other apps are out of scope.
+
+- **Export** writes one CSV file, `Tally-<yyyy-MM-dd>.csv`, saved with the system Save to Files sheet (not the share sheet). When the Face ID lock is on, the owner authenticates first. Settings says the file isn't encrypted.
+- **Format.** RFC 4180 CSV in UTF-8, CRLF line endings, a header row, then one row per balance:
+
+  `account_id,account_name,account_type,currency,notes,sort_order,archived_on,date,amount`
+
+  - Account columns repeat on each of that account's rows. An account with no balances has one row with `date` and `amount` empty.
+  - The format is the same in every language: `account_type` is `bank`, `broker`, `realEstate` or `debt`; dates are `yyyy-MM-dd`; amounts use a dot for decimals and no grouping (`-1234.5`); `currency` is an ISO code; `account_id` is a UUID.
+  - Columns may come in any order, and unknown columns are ignored, so a later version can add some. Values are written as they are, with no spreadsheet formula escaping: they are the user's own, and escaping would change them on import.
+  - Not included: exchange rates (downloaded again), settings, and the account and entry timestamps.
+- **Import** picks a file with the system file picker and reads at most 5 MB. It checks the whole file before changing anything, and on any problem changes nothing and lists the first problems by line number:
+  - a header that lacks a required column, a file that isn't UTF-8, or a row with more or fewer values than the header;
+  - an invalid ID, empty name, unknown type, or a currency Tally doesn't offer;
+  - a date that isn't valid or is outside the balance-entry range (2015-01-01 to today), for `date` and `archived_on`;
+  - an amount that isn't a number, or a negative amount for a type that doesn't allow one;
+  - a date without an amount or an amount without a date, or two balances for one account on one day;
+  - rows of one account that disagree on its details.
+- **Merge.** An account in the file matches the account on the phone with the same `account_id`; failing that, the one account with the same name (ignoring case), type and currency. A matched account keeps its details on the phone, and only its balances are merged; if its type or currency differs from the file, the import is refused. An unmatched account is added with the file's ID, details and archive date, after the existing accounts in the file's order. An imported balance is added, or replaces the balance on the same day, the same rule as entering it by hand. Nothing is deleted.
+- Before importing, a confirmation says how many accounts and balances will be added and how many balances replaced. A file that would change nothing says so instead. The import saves in one go.
+
 ### Settings
 - Base currency, Face ID toggle, and exchange-rate status with a refresh button.
+- Export and import a backup file.
 - About screen with a privacy statement.
 
 ## 7. Out of scope (v1)
@@ -117,7 +140,7 @@ A private, local-first iOS app for tracking personal net worth. The user updates
 - Individual stocks and ETFs, prices, or holdings.
 - Reminders and notifications.
 - CloudKit sync, iPad and Mac, widgets.
-- Export and import files. The standard iPhone backup is the backup strategy.
+- Importing files from banks or other apps, and replacing all data on import.
 - Interest rates, amortization, and linking mortgages to properties.
 - Real-estate ownership shares.
 - Crypto or any currency not published by the ECB.
@@ -126,5 +149,6 @@ A private, local-first iOS app for tracking personal net worth. The user updates
 
 - Unit tests for conversion, carry-forward, archive behaviour, missing-rate handling, base-currency change, and same-day entry merging.
 - Parse tests against fixture ECB XML files.
+- Backup file round trip, and import checks and merging.
 - UI test for the "Update all" flow.
 - Verify with a network monitor that no request goes anywhere except the ECB host.
